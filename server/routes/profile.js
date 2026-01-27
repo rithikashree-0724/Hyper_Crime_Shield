@@ -4,14 +4,19 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const otplib = require('otplib');
 const qrcode = require('qrcode');
-const bcrypt = require('bcryptjs'); // Needed for password change
+const bcrypt = require('bcryptjs');
 
 // Get Profile
 router.get('/', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password -twoFactorSecret');
+        // Exclude sensitive fields
+        const user = await User.findByPk(req.user.id, {
+            attributes: { exclude: ['password', 'twoFactorSecret'] }
+        });
+        if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -20,14 +25,16 @@ router.get('/', auth, async (req, res) => {
 router.put('/', auth, async (req, res) => {
     try {
         const { name, email, phone, profileImage } = req.body;
-        const user = await User.findById(req.user.id);
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
         if (name) user.name = name;
         if (email && email !== user.email) {
-            const existingUser = await User.findOne({ email });
+            const existingUser = await User.findOne({ where: { email } });
             if (existingUser) return res.status(400).json({ message: 'Email already in use' });
             user.email = email;
-            user.isVerified = false; // Reset verification on email change
+            user.isVerified = false;
         }
         if (phone) user.phone = phone;
         if (profileImage) user.profileImage = profileImage;
@@ -35,6 +42,7 @@ router.put('/', auth, async (req, res) => {
         await user.save();
         res.json({ message: 'Profile updated', user });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -43,15 +51,17 @@ router.put('/', auth, async (req, res) => {
 router.put('/change-password', auth, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const user = await User.findById(req.user.id);
+        const user = await User.findByPk(req.user.id);
 
-        const isMatch = await user.comparePassword(currentPassword);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid current password' });
+        if (!await user.comparePassword(currentPassword)) {
+            return res.status(400).json({ message: 'Invalid current password' });
+        }
 
-        user.password = newPassword; // Pre-save hook will hash it
+        user.password = newPassword; // Hook will hash it
         await user.save();
         res.json({ message: 'Password updated successfully' });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -59,7 +69,7 @@ router.put('/change-password', auth, async (req, res) => {
 // Generate 2FA Secret
 router.post('/2fa/generate', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findByPk(req.user.id);
         const secret = otplib.authenticator.generateSecret();
 
         user.twoFactorSecret = secret;
@@ -78,7 +88,7 @@ router.post('/2fa/generate', auth, async (req, res) => {
 router.post('/2fa/verify', auth, async (req, res) => {
     try {
         const { token } = req.body;
-        const user = await User.findById(req.user.id);
+        const user = await User.findByPk(req.user.id);
 
         const isValid = otplib.authenticator.check(token, user.twoFactorSecret);
         if (!isValid) return res.status(400).json({ message: 'Invalid token' });
@@ -94,8 +104,10 @@ router.post('/2fa/verify', auth, async (req, res) => {
 // Get Login History
 router.get('/login-history', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('loginHistory');
-        res.json(user.loginHistory);
+        const user = await User.findByPk(req.user.id, {
+            attributes: ['loginHistory']
+        });
+        res.json(user.loginHistory || []);
     } catch (err) {
         res.status(500).json({ message: 'Server Error' });
     }

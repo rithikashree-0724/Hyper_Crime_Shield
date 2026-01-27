@@ -5,36 +5,28 @@ exports.register = async (req, res) => {
     try {
         const { name, email, password, role, badgeId, phone } = req.body;
 
-        if (process.env.USE_MOCK_DATA === 'true') {
-            const mockToken = jwt.sign({ id: 'mock_' + (role || 'citizen'), role: role || 'citizen' }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
-            return res.status(201).json({
-                token: mockToken,
-                user: { id: 'mock_' + (role || 'citizen'), name, email, role: role || 'citizen', isVerified: true }
-            });
-        }
-
-        let user = await User.findOne({ email });
+        // Check if user exists
+        let user = await User.findOne({ where: { email } });
         if (user) return res.status(400).json({ message: 'User already exists' });
 
-        // Citizens are verified by default (simplification), others need approval
-        const isVerified = role === 'citizen';
-        const kycStatus = role === 'investigator' ? 'pending' : 'verified';
-
-        user = new User({
+        // Create new user (Sequelize hooks will hash password)
+        user = await User.create({
             name,
             email,
             password,
-            role,
-            badgeId: role === 'investigator' ? badgeId : undefined,
+            role: role || 'citizen',
+            badgeId: role === 'investigator' ? badgeId : null,
             phone,
-            isVerified,
-            kycStatus
+            isVerified: role === 'citizen' // Auto-verify citizens for now
         });
 
-        await user.save();
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
-        res.status(201).json({ token, user: { id: user._id, name, email, role, isVerified, kycStatus } });
+        // Return user data (exclude password)
+        const userResponse = user.toJSON();
+        delete userResponse.password;
+
+        res.status(201).json({ token, user: userResponse });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -45,55 +37,44 @@ exports.login = async (req, res) => {
     try {
         const { email, password, code } = req.body;
 
-        if (process.env.USE_MOCK_DATA === 'true') {
-            // Auto-detect role from email or default to citizen
-            let role = 'citizen';
-            let name = email.split('@')[0];
+        // Find User
+        const user = await User.findOne({ where: { email } });
 
-            if (email.includes('admin')) {
-                role = 'admin';
-                name = 'System Admin';
-            } else if (email.includes('rajesh') || email.includes('officer') || email.includes('investigator')) {
-                role = 'investigator';
-                name = 'Inspector ' + name;
-            } else {
-                name = name.charAt(0).toUpperCase() + name.slice(1);
-            }
-
-            const mockUser = { id: 'mock_' + role + '_' + Date.now(), name, email, role };
-            const token = jwt.sign({ id: mockUser.id, role: mockUser.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
-            return res.json({ token, user: mockUser });
-        }
-
-        const user = await User.findOne({ email });
+        // Check password using instance method
         if (!user || !(await user.comparePassword(password))) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        if (user.isSuspended) {
-            return res.status(403).json({ message: 'Account suspended. Contact Admin.' });
-        }
-
-        // 2FA Check
+        // 2FA Logic (if enabled)
         if (user.isTwoFactorEnabled) {
             if (!code) return res.status(400).json({ message: '2FA code required', isTwoFactorEnabled: true });
 
             const otplib = require('otplib');
+            // Assuming twoFactorSecret is stored.
+            // Note: If user somehow has 2FA enabled but no secret, this might fail.
             const isValid = otplib.authenticator.check(code, user.twoFactorSecret);
             if (!isValid) return res.status(400).json({ message: 'Invalid 2FA code' });
         }
 
-        // Log Login History
+        // Login History
+        // Initialize if null
+        let history = user.loginHistory || [];
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        user.loginHistory.push({ ip, device: req.headers['user-agent'] });
-        // Keep only last 10 logins
-        if (user.loginHistory.length > 10) {
-            user.loginHistory.shift();
-        }
+        history.push({ ip, device: req.headers['user-agent'], date: new Date() });
+
+        // Limit history
+        if (history.length > 10) history.shift();
+
+        // Update user
+        user.loginHistory = history;
+        // Sequelize detects JSON changes? Maybe need explicit changed() call or new array reference.
+        user.set('loginHistory', history);
         await user.save();
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
-        res.json({ token, user: { id: user._id, name: user.name, email, role: user.role, isTwoFactorEnabled: user.isTwoFactorEnabled } });
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
+
+        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isTwoFactorEnabled: user.isTwoFactorEnabled } });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

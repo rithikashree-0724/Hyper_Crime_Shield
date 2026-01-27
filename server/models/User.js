@@ -1,35 +1,83 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ['citizen', 'investigator', 'admin'], default: 'citizen' },
-    badgeId: { type: String },
-    phone: { type: String },
-    profileImage: { type: String },
-    kycStatus: { type: String, enum: ['pending', 'verified', 'rejected'], default: 'pending' },
-    isVerified: { type: Boolean, default: false }, // For email/admin approval
-    createdAt: { type: Date, default: Date.now },
-    twoFactorSecret: { type: String }, // For TOTP
-    isTwoFactorEnabled: { type: Boolean, default: false },
-    loginHistory: [{
-        timestamp: { type: Date, default: Date.now },
-        ip: { type: String },
-        device: { type: String }
-    }],
-    isSuspended: { type: Boolean, default: false }
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true
+        }
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    role: {
+        type: DataTypes.ENUM('citizen', 'investigator', 'admin'),
+        defaultValue: 'citizen'
+    },
+    phone: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    badgeId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    profileImage: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    twoFactorSecret: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    isTwoFactorEnabled: { // Fixed name from previous plan
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    loginHistory: {
+        type: DataTypes.JSON, // Store login history array
+        allowNull: true,
+        defaultValue: []
+    }
+}, {
+    timestamps: true,
+    hooks: {
+        beforeCreate: async (user) => {
+            if (user.password) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt);
+            }
+        },
+        beforeUpdate: async (user) => {
+            if (user.changed('password')) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt);
+            }
+        }
+    }
 });
 
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
-});
-
-userSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+// Instance Method for password comparison
+User.prototype.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

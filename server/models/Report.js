@@ -1,39 +1,73 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User'); // Import User for referencing
 
-const reportSchema = new mongoose.Schema({
-    reporter: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Optional for anonymous
-    isAnonymous: { type: Boolean, default: false },
-    complaintId: { type: String, unique: true }, // Auto-generated human readable ID
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    category: { type: String, required: true },
-    severity: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'low' },
-    status: { type: String, enum: ['reported', 'investigating', 'resolved', 'dismissed'], default: 'reported' },
-    evidence: [{ type: String }], // URLs to evidence files/logs
-    location: { type: String },
-    incidentDate: { type: Date },
-    suspects: [{ type: String }],
-    timeline: [{
-        status: String,
-        note: String,
-        updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        date: { type: Date, default: Date.now }
-    }],
-    messages: [{
-        sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        message: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-// Auto-generate Complaint ID
-reportSchema.pre('save', function (next) {
-    if (!this.complaintId) {
-        this.complaintId = 'CR-' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000);
+// Define the Report model
+const Report = sequelize.define('Report', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User, // Use the model itself
+            key: 'id'
+        }
+    },
+    complaintId: { // Custom ID like CRIME-2024-001
+        type: DataTypes.STRING,
+        unique: true
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    category: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    severity: {
+        type: DataTypes.ENUM('low', 'medium', 'high', 'critical'),
+        defaultValue: 'medium'
+    },
+    status: {
+        type: DataTypes.ENUM('pending', 'investigating', 'resolved', 'closed', 'escalated'),
+        defaultValue: 'pending'
+    },
+    location: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    isAnonymous: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    suspects: {
+        type: DataTypes.TEXT, // Stored as string
+        allowNull: true
+    },
+    evidence: {
+        type: DataTypes.JSON, // To store file paths
+        allowNull: true
+    },
+    incidentDate: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
-    next();
+}, {
+    tableName: 'reports',
+    timestamps: true
 });
 
-module.exports = mongoose.model('Report', reportSchema);
+// Associations
+User.hasMany(Report, { foreignKey: 'userId', as: 'reports' });
+Report.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = Report;

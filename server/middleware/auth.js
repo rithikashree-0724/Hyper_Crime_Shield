@@ -1,16 +1,27 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Sequelize model
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
-        req.user = decoded;
+
+        // Check for mock
+        if (decoded.id && decoded.id.toString().startsWith('mock_')) {
+            req.user = decoded;
+            return next();
+        }
+
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+        req.user = user;
         next();
     } catch (err) {
-        // If in mock mode and token verification fails, allow with default mock user
         if (process.env.USE_MOCK_DATA === 'true') {
             req.user = { id: 'mockuser', role: 'citizen' };
             return next();

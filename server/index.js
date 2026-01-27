@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -72,12 +72,11 @@ server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/crime-shield')
-    .then(() => {
-        console.log('Connected to MongoDB');
-    })
-    .catch(err => {
-        console.error('MongoDB connection error. Check if local MongoDB is running.');
-        process.env.USE_MOCK_DATA = 'true';
-        console.log('Note: USE_MOCK_DATA is now active. Server will function in demo mode.');
-    });
+const { sequelize } = require('./config/db');
+
+// Sync Database
+sequelize.sync({ alter: true }).then(() => {
+    console.log('MySQL Database & Tables Synced');
+}).catch(err => {
+    console.error('MySQL Sync Error:', err);
+});
