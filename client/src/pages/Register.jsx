@@ -77,7 +77,7 @@ const Register = () => {
                                     type="text"
                                     name="phone"
                                     className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
-                                    placeholder="+1 234 567 890"
+                                    placeholder="+91 98765 43210"
                                     value={formData.phone}
                                     onChange={handleChange}
                                 />

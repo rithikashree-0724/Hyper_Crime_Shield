@@ -308,6 +308,7 @@ const Profile = () => {
                                             className="input-field"
                                             value={formData.phone}
                                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="+91 98765 43210"
                                         />
                                     ) : (
                                         <p className="text-lg font-bold">{userData.phone || 'Not set'}</p>
