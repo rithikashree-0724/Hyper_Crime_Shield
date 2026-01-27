@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { generateOTP, sendMockEmail } = require('../utils/otpService');
 
 exports.register = async (req, res) => {
     try {
@@ -17,7 +18,8 @@ exports.register = async (req, res) => {
             role: role || 'citizen',
             badgeId: role === 'investigator' ? badgeId : null,
             phone,
-            isVerified: role === 'citizen' // Auto-verify citizens for now
+            isVerified: role === 'citizen', // Auto-verify citizens for now
+            kycStatus: role === 'citizen' ? 'verified' : 'pending'
         });
 
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
@@ -41,19 +43,36 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ where: { email } });
 
         // Check password using instance method
+        // Check password
         if (!user || !(await user.comparePassword(password))) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // 2FA Logic (if enabled)
+        // 2FA Logic (Email OTP)
         if (user.isTwoFactorEnabled) {
-            if (!code) return res.status(400).json({ message: '2FA code required', isTwoFactorEnabled: true });
+            // If code is provided, verify it
+            if (code) {
+                if (user.loginOtp !== code || new Date() > user.loginOtpExpires) {
+                    return res.status(400).json({ message: 'Invalid or expired OTP' });
+                }
+                // Clear OTP after success
+                user.loginOtp = null;
+                user.loginOtpExpires = null;
+            } else {
+                // Generate and send OTP
+                const generatedOtp = generateOTP();
+                user.loginOtp = generatedOtp;
+                user.loginOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+                await user.save();
 
-            const otplib = require('otplib');
-            // Assuming twoFactorSecret is stored.
-            // Note: If user somehow has 2FA enabled but no secret, this might fail.
-            const isValid = otplib.authenticator.check(code, user.twoFactorSecret);
-            if (!isValid) return res.status(400).json({ message: 'Invalid 2FA code' });
+                // Mock Sending Email
+                sendMockEmail(user.email, generatedOtp);
+
+                return res.status(200).json({
+                    message: `OTP sent to your registered email: ${user.email}`,
+                    requires2FA: true
+                });
+            }
         }
 
         // Login History

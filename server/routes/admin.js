@@ -11,14 +11,12 @@ const checkAdmin = auth.authorize('admin');
 // Get System Stats
 router.get('/stats', auth, checkAdmin, async (req, res) => {
     try {
-        if (process.env.USE_MOCK_DATA === 'true') {
-            return res.json({ users: 50, reports: 120, investigations: 45 });
-        }
-        const users = await User.countDocuments();
-        const reports = await Report.countDocuments();
-        const investigations = await Investigation.countDocuments();
+        const users = await User.count();
+        const reports = await Report.count();
+        const investigations = await Investigation.count();
         res.json({ users, reports, investigations });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -26,9 +24,13 @@ router.get('/stats', auth, checkAdmin, async (req, res) => {
 // Get Pending Users (Investigators requiring approval)
 router.get('/users/pending', auth, checkAdmin, async (req, res) => {
     try {
-        const users = await User.find({ kycStatus: 'pending', role: 'investigator' });
+        const users = await User.findAll({
+            where: { kycStatus: 'pending', role: 'investigator' },
+            attributes: { exclude: ['password'] }
+        });
         res.json(users);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -36,7 +38,7 @@ router.get('/users/pending', auth, checkAdmin, async (req, res) => {
 // Approve User
 router.patch('/users/:id/approve', auth, checkAdmin, async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findByPk(req.params.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         user.kycStatus = 'verified';
@@ -45,6 +47,7 @@ router.patch('/users/:id/approve', auth, checkAdmin, async (req, res) => {
 
         res.json({ message: 'User approved', user });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });

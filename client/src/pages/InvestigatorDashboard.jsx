@@ -32,7 +32,7 @@ const InvestigatorDashboard = () => {
         });
 
         socket.on('report_updated', (updatedReport) => {
-            setCases(prev => prev.map(c => c.report._id === updatedReport._id ? { ...c, report: updatedReport } : c));
+            setCases(prev => prev.map(c => c.report.id === updatedReport.id ? { ...c, report: updatedReport } : c));
         });
 
         return () => {
@@ -168,7 +168,7 @@ const InvestigatorDashboard = () => {
                         ) : (
                             <div className="grid gap-4">
                                 {filteredCases.map((investigation) => (
-                                    <div key={investigation._id} className="glass-card p-6 rounded-xl border-white/5 hover:bg-white/[0.03] transition-all group">
+                                    <div key={investigation.id} className="glass-card p-6 rounded-xl border-white/5 hover:bg-white/[0.03] transition-all group">
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-start gap-3 mb-3">
@@ -180,7 +180,7 @@ const InvestigatorDashboard = () => {
                                                             {investigation.report?.title || 'Untitled Case'}
                                                         </h4>
                                                         <p className="text-xs text-text-secondary mt-1">
-                                                            Case ID: {investigation.report?.complaintId || investigation._id}
+                                                            Case ID: {investigation.report?.complaintId || investigation.id}
                                                         </p>
                                                         <div className="flex flex-wrap gap-2 mt-2">
                                                             <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider">
@@ -212,7 +212,7 @@ const InvestigatorDashboard = () => {
                                                 </div>
                                             </div>
                                             <Link
-                                                to={`/reports/${investigation.report?._id}`}
+                                                to={`/reports/${investigation.report?.id}`}
                                                 className="btn-primary flex items-center gap-2 whitespace-nowrap"
                                             >
                                                 View Case File

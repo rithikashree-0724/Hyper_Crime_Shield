@@ -45,23 +45,26 @@ router.post('/:reportId', auth, upload.single('file'), async (req, res) => {
 
         const fileHash = await calculateHash(req.file.path);
 
-        const evidence = new Evidence({
-            report: req.params.reportId,
+        const evidence = await Evidence.create({
+            reportId: req.params.reportId,
             fileName: req.file.originalname,
             fileUrl: req.file.path.replace(/\\/g, '/'),
             fileType: req.file.mimetype,
             fileSize: req.file.size,
             hash: fileHash,
-            uploadedBy: req.user.id,
-            chainOfCustody: [{ action: 'uploaded', actor: req.user.id }]
+            uploadedById: req.user.id,
+            chainOfCustody: [{ action: 'uploaded', actorId: req.user.id, timestamp: new Date() }]
         });
 
-        await evidence.save();
-
-        // Link to Report
-        await Report.findByIdAndUpdate(req.params.reportId, {
-            $push: { evidence: evidence.fileUrl }
-        });
+        // Link to Report (Update the evidence JSON array)
+        const report = await Report.findByPk(req.params.reportId);
+        if (report) {
+            let existingEvidence = report.evidence || [];
+            existingEvidence.push(evidence.fileUrl);
+            report.evidence = existingEvidence;
+            report.changed('evidence', true);
+            await report.save();
+        }
 
         res.status(201).json(evidence);
     } catch (err) {
@@ -73,9 +76,13 @@ router.post('/:reportId', auth, upload.single('file'), async (req, res) => {
 // Get Evidence for a Report
 router.get('/:reportId', auth, async (req, res) => {
     try {
-        const evidence = await Evidence.find({ report: req.params.reportId });
+        const evidence = await Evidence.findAll({
+            where: { reportId: req.params.reportId },
+            include: [{ model: User, as: 'uploader', attributes: ['name'] }]
+        });
         res.json(evidence);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });

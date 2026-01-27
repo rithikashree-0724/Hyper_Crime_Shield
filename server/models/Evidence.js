@@ -1,19 +1,60 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User');
+const Report = require('./Report');
 
-const evidenceSchema = new mongoose.Schema({
-    report: { type: mongoose.Schema.Types.ObjectId, ref: 'Report', required: true },
-    fileName: { type: String, required: true },
-    fileUrl: { type: String, required: true },
-    fileType: { type: String },
-    fileSize: { type: Number },
-    hash: { type: String, required: true }, // SHA-256 hash for integrity
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Citizen or Investigator
-    chainOfCustody: [{
-        action: String, // 'uploaded', 'viewed', 'downloaded'
-        actor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        timestamp: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now }
+const Evidence = sequelize.define('Evidence', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    reportId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Report,
+            key: 'id'
+        }
+    },
+    fileName: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    fileUrl: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    fileType: {
+        type: DataTypes.STRING
+    },
+    fileSize: {
+        type: DataTypes.INTEGER
+    },
+    hash: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    uploadedById: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    chainOfCustody: {
+        type: DataTypes.JSON, // Array of { action, actorId, timestamp }
+        defaultValue: []
+    }
+}, {
+    tableName: 'evidence',
+    timestamps: true
 });
 
-module.exports = mongoose.model('Evidence', evidenceSchema);
+// Associations
+Report.hasMany(Evidence, { foreignKey: 'reportId', as: 'allEvidence' });
+Evidence.belongsTo(Report, { foreignKey: 'reportId', as: 'report' });
+User.hasMany(Evidence, { foreignKey: 'uploadedById', as: 'uploadedEvidence' });
+Evidence.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploader' });
+
+module.exports = Evidence;

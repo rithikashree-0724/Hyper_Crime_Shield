@@ -68,7 +68,7 @@ const AdminDashboard = () => {
             await axios.patch(`http://localhost:5001/api/admin/users/${id}/approve`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setPendingUsers(pendingUsers.filter(u => u._id !== id));
+            setPendingUsers(pendingUsers.filter(u => u.id !== id));
 
             alert('Investigator approved successfully.');
         } catch (err) {
@@ -219,7 +219,7 @@ const AdminDashboard = () => {
                         ) : (
                             <div className="grid gap-4">
                                 {pendingUsers.map(u => (
-                                    <div key={u._id} className="flex flex-col md:flex-row items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl gap-4">
+                                    <div key={u.id} className="flex flex-col md:flex-row items-center justify-between bg-surface-dark border border-white/5 p-4 rounded-xl gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">{u.name[0]}</div>
                                             <div>
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => approveUser(u._id)} className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-green-500/20 transition-colors">Approve</button>
+                                            <button onClick={() => approveUser(u.id)} className="px-4 py-2 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-green-500/20 transition-colors">Approve</button>
                                             <button className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-500/20 transition-colors">Reject</button>
                                         </div>
                                     </div>

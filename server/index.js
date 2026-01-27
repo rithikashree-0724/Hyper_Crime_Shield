@@ -1,5 +1,4 @@
 const express = require('express');
-// const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -11,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173", "http://localhost:5174"],
         methods: ["GET", "POST"]
     }
 });
@@ -19,7 +18,9 @@ const io = new Server(server, {
 // Middleware
 app.use(express.json());
 app.use(cors());
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
 
@@ -60,6 +61,9 @@ app.get('/', (req, res) => {
 const fs = require('fs');
 if (!fs.existsSync('./logs')) {
     fs.mkdirSync('./logs');
+}
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
 }
 
 const { ipBlocker, activityLogger } = require('./middleware/security');

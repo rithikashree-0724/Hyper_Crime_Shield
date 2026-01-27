@@ -11,23 +11,35 @@ export const AuthProvider = ({ children }) => {
     const [isLockdown, setIsLockdown] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token && token !== 'demo-token') {
-            // In a real app, you'd verify the token with the server here
-            // For now, we'll just keep it if it looks valid
-            // setLoading(false); 
-        }
-        setLoading(false);
+        const checkAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (token && token !== 'demo-token') {
+                try {
+                    const { data } = await API.getProfile();
+                    setUser(data);
+                } catch (err) {
+                    console.error('Session restore failed:', err);
+                    localStorage.removeItem('token');
+                }
+            }
+            setLoading(false);
+        };
+        checkAuth();
     }, []);
 
     const toggleLockdown = () => setIsLockdown(!isLockdown);
 
-    const loginUser = async (email, password) => {
+    const loginUser = async (email, password, code) => {
         try {
-            const { data } = await API.login({ email, password });
+            const { data } = await API.login({ email, password, code });
+
+            if (data.requires2FA) {
+                return { success: true, requires2FA: true, message: data.message };
+            }
+
             localStorage.setItem('token', data.token);
             setUser(data.user);
-            return { success: true };
+            return { success: true, user: data.user };
         } catch (err) {
             return { success: false, message: err.response?.data?.message || 'Login failed' };
         }

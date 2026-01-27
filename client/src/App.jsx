@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Resources from './pages/Resources';
 import LockdownAlert from './components/LockdownAlert';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -27,7 +28,9 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/reports/:id" element={<ReportDetails />} />
         <Route path="/investigator-dashboard" element={<InvestigatorDashboard />} />
-        <Route path="/report-crime" element={<ReportCrime />} />
+        <Route element={<ProtectedRoute requireVerification={true} />}>
+          <Route path="/report-crime" element={<ReportCrime />} />
+        </Route>
         <Route path="/profile" element={<Profile />} />
         <Route path="/support" element={<Support />} />
       </Routes>

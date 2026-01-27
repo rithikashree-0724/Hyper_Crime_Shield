@@ -3,18 +3,19 @@ import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [userData, setUserData] = useState({ name: '', email: '', phone: '', role: '', isVerified: false, isTwoFactorEnabled: false });
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({ name: '', phone: '' });
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    const [qrCode, setQrCode] = useState('');
+    const [showVerify, setShowVerify] = useState(false);
     const [twoFactorCode, setTwoFactorCode] = useState('');
     const [loginHistory, setLoginHistory] = useState([]);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [activeTab, setActiveTab] = useState('profile');
     const [loading, setLoading] = useState(false);
-    const [profileImage, setProfileImage] = useState(null); // New state
+    const [profileImage, setProfileImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => {
         fetchProfile();
@@ -22,6 +23,18 @@ const Profile = () => {
             fetchLoginHistory();
         }
     }, [activeTab]);
+
+    useEffect(() => {
+        if (!profileImage) {
+            setImagePreview(null);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(profileImage);
+    }, [profileImage]);
 
     const fetchProfile = async () => {
         try {
@@ -31,6 +44,7 @@ const Profile = () => {
             });
             const data = await res.json();
             setUserData(data);
+            setUser(data); // Sync global context
             setFormData({ name: data.name || '', email: data.email || '', phone: data.phone || '' });
         } catch (err) {
             showMessage('error', 'Failed to load profile');
@@ -65,21 +79,30 @@ const Profile = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
+            const data = new FormData();
+            data.append('name', formData.name);
+            data.append('email', formData.email);
+            data.append('phone', formData.phone);
+            if (profileImage) {
+                data.append('profileImage', profileImage);
+            }
+
             const res = await fetch('http://localhost:5001/api/profile', {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData)
+                body: data
             });
-            const data = await res.json();
+            const responseData = await res.json();
             if (res.ok) {
-                setUserData({ ...userData, ...formData });
+                setUserData(responseData.user);
+                setUser(responseData.user); // Update global state
                 setEditMode(false);
+                setProfileImage(null);
                 showMessage('success', 'Profile updated successfully!');
             } else {
-                showMessage('error', data.message || 'Update failed');
+                showMessage('error', responseData.message || 'Update failed');
             }
         } catch (err) {
             showMessage('error', 'Failed to update profile');
@@ -124,19 +147,43 @@ const Profile = () => {
         setLoading(false);
     };
 
-    const handleGenerate2FA = async () => {
+    const handleEnable2FA = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/2fa/generate', {
+            const res = await fetch('http://localhost:5001/api/profile/2fa/setup', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await res.json();
-            setQrCode(data.qrCode);
-            showMessage('success', 'Scan the QR code with Google Authenticator');
+
+            if (res.ok) {
+                setShowVerify(true);
+                showMessage('success', 'Verification OTP sent to your email!');
+            } else {
+                const data = await res.json();
+                showMessage('error', data.message || 'Failed to send OTP');
+            }
         } catch (err) {
-            showMessage('error', 'Failed to generate 2FA');
+            showMessage('error', 'Failed to enable 2FA');
+        }
+        setLoading(false);
+    };
+
+    const handleDisable2FA = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5001/api/profile/2fa/disable', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                setUserData({ ...userData, isTwoFactorEnabled: false });
+                showMessage('success', '2FA Disabled');
+            }
+        } catch (err) {
+            showMessage('error', 'Failed to disable 2FA');
         }
         setLoading(false);
     };
@@ -156,12 +203,13 @@ const Profile = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ token: twoFactorCode })
+                body: JSON.stringify({ code: twoFactorCode })
             });
             const data = await res.json();
             if (res.ok) {
                 setUserData({ ...userData, isTwoFactorEnabled: true });
-                setQrCode('');
+                setUser({ ...user, isTwoFactorEnabled: true });
+                setShowVerify(false);
                 setTwoFactorCode('');
                 showMessage('success', '2FA enabled successfully!');
             } else {
@@ -237,17 +285,22 @@ const Profile = () => {
                             <div className="flex items-start justify-between mb-8">
                                 <div className="flex items-center gap-6">
                                     <div className="relative group">
-                                        <div className="size-24 rounded-full bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center">
-                                            {userData.profileImage ? (
-                                                <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
+                                        <div className="size-24 rounded-full bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center bg-cover bg-center"
+                                            style={(imagePreview || userData.profileImage) ? { backgroundImage: `url(${imagePreview || userData.profileImage})` } : {}}>
+                                            {!(imagePreview || userData.profileImage) && (
                                                 <span className="material-symbols-outlined text-4xl text-text-muted">person</span>
                                             )}
                                         </div>
                                         {editMode && (
-                                            <button className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => setProfileImage(e.target.files[0])}
+                                                />
                                                 <span className="material-symbols-outlined text-white">camera_alt</span>
-                                            </button>
+                                            </label>
                                         )}
                                     </div>
                                     <div>
@@ -360,8 +413,8 @@ const Profile = () => {
                             <div className="p-6 bg-white/5 rounded-xl border border-white/5 mb-6">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-white mb-1">Authenticator App (TOTP)</h3>
-                                        <p className="text-xs text-text-secondary">Use Google Authenticator, Authy, or any TOTP-compatible app</p>
+                                        <h3 className="font-bold text-white mb-1">Email Authentication</h3>
+                                        <p className="text-xs text-text-secondary">Receive a 6-digit code on your email for every login</p>
                                     </div>
                                     {userData.isTwoFactorEnabled ? (
                                         <div className="flex items-center gap-2">
@@ -369,30 +422,28 @@ const Profile = () => {
                                             <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-bold uppercase tracking-widest">
                                                 Enabled
                                             </span>
+                                            <button onClick={handleDisable2FA} className="text-red-500 text-xs ml-4">Disable</button>
                                         </div>
                                     ) : (
                                         <button
-                                            onClick={handleGenerate2FA}
+                                            onClick={handleEnable2FA}
                                             disabled={loading}
                                             className="btn-primary text-xs px-4 py-2"
                                         >
-                                            {loading ? 'Generating...' : 'Setup 2FA'}
+                                            {loading ? 'Processing...' : 'Enable Email 2FA'}
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            {qrCode && (
+                            {showVerify && (
                                 <div className="p-8 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl border border-blue-500/20 animate-fade-in">
                                     <div className="flex flex-col items-center text-center">
-                                        <span className="material-symbols-outlined text-6xl text-primary mb-4">qr_code_scanner</span>
-                                        <h3 className="text-xl font-bold mb-2">Scan QR Code</h3>
+                                        <span className="material-symbols-outlined text-6xl text-primary mb-4">sms</span>
+                                        <h3 className="text-xl font-bold mb-2">Verify Email Address</h3>
                                         <p className="text-sm text-text-secondary mb-6 max-w-md">
-                                            Open your authenticator app and scan this QR code. Then enter the 6-digit code to complete setup.
+                                            We've sent a 6-digit verification code to your email. Enter it below to enable 2FA.
                                         </p>
-                                        <div className="bg-white p-4 rounded-xl mb-6">
-                                            <img src={qrCode} alt="2FA QR Code" className="size-48" />
-                                        </div>
 
                                         <div className="flex gap-2 w-full max-w-sm">
                                             <input

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Report = require('../models/Report'); // Sequelize Model
-const User = require('../models/User'); // Sequelize Model
+const Report = require('../models/Report');
+const User = require('../models/User');
+const Investigation = require('../models/Investigation');
+const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload'); // File upload middleware (Multer)
 
@@ -9,7 +11,10 @@ const upload = require('../middleware/upload'); // File upload middleware (Multe
 router.get('/', auth, async (req, res) => {
     try {
         let options = {
-            include: [{ model: User, as: 'user', attributes: ['name', 'email'] }],
+            include: [
+                { model: User, as: 'user', attributes: ['name', 'email'] },
+                { model: Investigation, as: 'investigation' }
+            ],
             order: [['createdAt', 'DESC']]
         };
 
@@ -63,6 +68,11 @@ router.post('/', auth, upload.array('evidence'), async (req, res) => {
         // const fullReport = await Report.findByPk(report.id, { include: 'user' });
 
         res.status(201).json(report);
+
+        // Real-time notification for investigators/admin
+        if (req.io) {
+            req.io.emit('new_report', report);
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
@@ -73,7 +83,15 @@ router.post('/', auth, upload.array('evidence'), async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
     try {
         const report = await Report.findByPk(req.params.id, {
-            include: [{ model: User, as: 'user', attributes: ['name', 'email', 'phone'] }]
+            include: [
+                { model: User, as: 'user', attributes: ['name', 'email', 'phone'] },
+                { model: Investigation, as: 'investigation' },
+                {
+                    model: Message,
+                    as: 'messages',
+                    include: [{ model: User, as: 'sender', attributes: ['name', 'role'] }]
+                }
+            ]
         });
 
         if (!report) return res.status(404).json({ message: 'Report not found' });
@@ -106,6 +124,11 @@ router.put('/:id', auth, async (req, res) => {
         await report.save();
 
         res.json(report);
+
+        // Real-time update
+        if (req.io) {
+            req.io.emit('report_updated', report);
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
@@ -121,23 +144,23 @@ router.post('/:id/message', auth, async (req, res) => {
         if (!report) return res.status(404).json({ message: 'Report not found' });
 
         // Create Message
-        const Message = require('../models/Message');
         const message = await Message.create({
             reportId: report.id,
             senderId: req.user.id,
             content
         });
 
+        // Fetch sender for response and emission
+        const fullMessage = await Message.findByPk(message.id, {
+            include: [{ model: User, as: 'sender', attributes: ['name', 'role'] }]
+        });
+
         // Emit Socket Event
-        const io = req.app.get('io');
-        if (io) {
-            io.to(report.id).emit('receive_message', {
-                ...message.toJSON(),
-                sender: { name: req.user.name, role: req.user.role } // optimizing payload
-            });
+        if (req.io) {
+            req.io.to(report.id.toString()).emit('receive_message', fullMessage);
         }
 
-        res.status(201).json(message);
+        res.status(201).json(fullMessage);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });

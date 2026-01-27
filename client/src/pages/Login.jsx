@@ -48,11 +48,22 @@ const Login = () => {
 
     const theme = getTheme(selectedRole);
 
+    const [showOTP, setShowOTP] = useState(false);
+    const [otp, setOtp] = useState('');
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const res = await login(email, password);
+
+        // If showing OTP, submit with OTP code
+        const res = await login(email, password, showOTP ? otp : undefined);
+
         if (res.success) {
+            if (res.requires2FA) {
+                setShowOTP(true);
+                return;
+            }
+
             if (res.user.role !== selectedRole) {
                 setError(`Access denied. You are not a registered ${selectedRole}.`);
                 await logout();
@@ -85,7 +96,7 @@ const Login = () => {
                     <div className="text-center mb-10">
                         <div className="flex items-center justify-center gap-2 mb-3">
                             <div className={`h-px w-6 ${theme.bg} opacity-50`}></div>
-                            <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} transition-colorsDuration-300`}>Login Portal</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} transition-colors duration-300`}>Login Portal</span>
                             <div className={`h-px w-6 ${theme.bg} opacity-50`}></div>
                         </div>
                         <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Welcome Back</h2>
@@ -114,48 +125,73 @@ const Login = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Email Address</label>
-                            <div className="relative group">
-                                <input
-                                    type="email"
-                                    className={`w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-1 ${theme.ring} transition-all font-bold placeholder:text-text-muted text-sm`}
-                                    placeholder="name@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                                <span className={`material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:${theme.text} transition-colors text-xl`}>alternate_email</span>
-                            </div>
-                        </div>
+                        {!showOTP ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Email Address</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="email"
+                                            className={`w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-1 ${theme.ring} transition-all font-bold placeholder:text-text-muted text-sm`}
+                                            placeholder="name@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                        />
+                                        {/* Icon */}
+                                    </div>
+                                </div>
 
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Password</label>
-                            <div className="relative group">
-                                <input
-                                    type="password"
-                                    className={`w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-1 ${theme.ring} transition-all font-bold placeholder:text-text-muted text-sm`}
-                                    placeholder="••••••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                <span className={`material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:${theme.text} transition-colors text-xl`}>verified_user</span>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Password</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="password"
+                                            className={`w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-1 ${theme.ring} transition-all font-bold placeholder:text-text-muted text-sm`}
+                                            placeholder="••••••••••••"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                        {/* Icon */}
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col gap-2 animate-fade-in">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Enter OTP</label>
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        className={`w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:ring-1 ${theme.ring} transition-all font-bold placeholder:text-text-muted text-sm tracking-[0.5em] text-center`}
+                                        placeholder="......"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        maxLength={6}
+                                        required
+                                    />
+                                </div>
+                                <p className="text-xs text-center text-text-secondary mt-2">Check your server console for the mock OTP</p>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="pt-4">
+                        <div className="pt-4 flex flex-col gap-4">
                             <button
                                 type="submit"
                                 className={`w-full h-14 rounded-xl text-sm font-bold uppercase tracking-widest shadow-xl transition-all hover:brightness-110 active:scale-95 text-white ${theme.bg} ${theme.shadow}`}
                             >
-                                Sign In
+                                {showOTP ? 'Verify OTP' : 'Sign In'}
                             </button>
-                            <div className="mt-8 flex items-center justify-between px-2">
-                                <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors">Forgot Password?</a>
-                                <div className="size-1 bg-white/10 rounded-full"></div>
-                                <Link to="/register" className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors">Create Account</Link>
-                            </div>
+
+
+
+                            {!showOTP && (
+                                <div className="mt-8 flex items-center justify-between px-2">
+                                    <a href="#" className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors">Forgot Password?</a>
+                                    <div className="size-1 bg-white/10 rounded-full"></div>
+                                    <Link to="/register" className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors">Create Account</Link>
+                                </div>
+                            )}
                         </div>
                     </form>
                 </div>

@@ -16,6 +16,7 @@ const Register = () => {
     const { register } = useAuth();
     const navigate = useNavigate();
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,13 +25,18 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
+
         if (formData.password !== formData.confirmPassword) {
             return setError('Passwords do not match');
         }
 
         const res = await register(formData);
         if (res.success) {
-            navigate('/dashboard');
+            setSuccess('Account created successfully! Redirecting to dashboard in 5 seconds...');
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 5000);
         } else {
             setError(res.message);
         }
@@ -56,6 +62,7 @@ const Register = () => {
                     </div>
 
                     {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 text-center">{error}</div>}
+                    {success && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs p-3 rounded-lg mb-4 text-center animate-pulse">{success}</div>}
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -134,10 +141,11 @@ const Register = () => {
                             >
                                 <option value="citizen">Citizen</option>
                                 <option value="investigator">Investigator</option>
+                                <option value="admin">Admin</option>
                             </select>
                         </div>
 
-                        {formData.role === 'investigator' && (
+                        {(formData.role === 'investigator' || formData.role === 'admin') && (
                             <div className="flex flex-col gap-1 animate-fade-in">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Badge ID</label>
                                 <input

@@ -23,7 +23,7 @@ const ReportDetails = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Find specific report from list (since getReports returns all for that user/admin)
-            const found = res.data.find(r => r._id === id || r.complaintId === id);
+            const found = res.data.find(r => r.id === parseInt(id) || r.complaintId === id);
             setReport(found);
             setLoading(false);
         } catch (err) {
@@ -38,13 +38,42 @@ const ReportDetails = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`http://localhost:5001/api/reports/${report._id}/message`, { message: newMessage }, {
+            await axios.post(`http://localhost:5001/api/reports/${report.id}/message`, { content: newMessage }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNewMessage('');
             fetchReport(); // Refresh to show new message
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleStatusUpdate = async (newStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:5001/api/reports/${report.id}`, { status: newStatus }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchReport();
+            alert(`Status updated to ${newStatus}`);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update status');
+        }
+    };
+
+    const handleEscalate = async () => {
+        if (!window.confirm('Are you sure you want to escalate this case? This will notify higher authorities.')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:5001/api/reports/${report.id}/escalate`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchReport();
+            alert('Case Escalated!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to escalate case');
         }
     };
 
@@ -66,7 +95,7 @@ const ReportDetails = () => {
                         <div className="glass-card p-8 rounded-3xl border-white/5 relative overflow-hidden">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-2 block">Case File: {report.complaintId || report._id}</span>
+                                    <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-2 block">Case File: {report.complaintId || report.id}</span>
                                     <h1 className="text-3xl font-black text-white">{report.title}</h1>
                                 </div>
                                 <div className="px-4 py-1.5 bg-primary/10 border border-primary/30 rounded-full text-[10px] font-black uppercase tracking-widest text-primary">
@@ -105,9 +134,9 @@ const ReportDetails = () => {
                                     <h3 className="text-sm font-bold uppercase tracking-widest text-[#94a3b8] mb-4">Attached Evidence</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {report.evidence.map((file, i) => (
-                                            <div key={i} className="aspect-square bg-surface-dark rounded-xl border border-white/10 flex items-center justify-center group overflow-hidden relative">
+                                            <div key={i} onClick={() => window.open(file, '_blank')} className="aspect-square bg-surface-dark rounded-xl border border-white/10 flex items-center justify-center group overflow-hidden relative cursor-pointer">
                                                 <span className="material-symbols-outlined text-3xl text-text-muted group-hover:scale-110 transition-transform">article</span>
-                                                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-center cursor-pointer">
+                                                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <span className="text-[10px] font-bold text-white uppercase tracking-tighter">View</span>
                                                 </div>
                                             </div>
@@ -206,6 +235,31 @@ const ReportDetails = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Investigator Controls */}
+                        {(user?.role === 'investigator' || user?.role === 'admin') && (
+                            <div className="glass-card p-6 rounded-3xl border-white/5 bg-blue-500/[0.02]">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-base">gavel</span>
+                                    Actions
+                                </h3>
+                                <div className="flex flex-col gap-3">
+                                    <h4 className="text-[10px] font-bold uppercase text-text-muted">Update Status</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        <button onClick={() => handleStatusUpdate('investigating')} className="px-3 py-2 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-[10px] font-bold uppercase hover:bg-yellow-500/20 transition-colors">Investigating</button>
+                                        <button onClick={() => handleStatusUpdate('resolved')} className="px-3 py-2 rounded-lg bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold uppercase hover:bg-green-500/20 transition-colors">Resolve Case</button>
+                                        <button onClick={() => handleStatusUpdate('closed')} className="px-3 py-2 rounded-lg bg-gray-500/10 text-gray-500 border border-gray-500/20 text-[10px] font-bold uppercase hover:bg-gray-500/20 transition-colors">Close Case</button>
+                                    </div>
+
+                                    <div className="h-px bg-white/5 my-2"></div>
+
+                                    <button onClick={handleEscalate} className="w-full py-3 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 text-xs font-bold uppercase tracking-wider hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">warning</span>
+                                        Escalate to Higher Authority
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Support Info */}
                         <div className="p-6 rounded-3xl border border-white/5 bg-surface-dark/40">

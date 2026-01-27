@@ -211,14 +211,14 @@ const Dashboard = () => {
                                         </div>
                                     </td></tr>
                                 ) : reports.map((report) => (
-                                    <tr key={report._id} className="group hover:bg-white/[0.02] transition-colors">
+                                    <tr key={report.id} className="group hover:bg-white/[0.02] transition-colors">
                                         <td className="px-8 py-6">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">
                                                     {report.title || 'Untitled Report'}
                                                 </span>
                                                 <span className="text-[8px] font-mono text-text-muted uppercase mt-0.5 tracking-tighter">
-                                                    ID: {report.complaintId || report._id}
+                                                    ID: {report.complaintId || report.id}
                                                 </span>
                                             </div>
                                         </td>
@@ -238,7 +238,7 @@ const Dashboard = () => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <Link to={`/reports/${report._id}`} className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors flex items-center gap-2 group/btn border border-white/5 px-4 py-2 rounded-lg hover:border-white/20">
+                                            <Link to={`/reports/${report.id}`} className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors flex items-center gap-2 group/btn border border-white/5 px-4 py-2 rounded-lg hover:border-white/20">
                                                 View Details
                                                 <span className="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform">visibility</span>
                                             </Link>

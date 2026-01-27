@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { sequelize } = require('./config/db');
 const User = require('./models/User');
 const Report = require('./models/Report');
 const Investigation = require('./models/Investigation');
@@ -6,54 +6,52 @@ require('dotenv').config();
 
 const seedData = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/crime-shield');
-        console.log('Connected to MongoDB for seeding');
+        await sequelize.authenticate();
+        console.log('Connected to SQLite for seeding');
 
-        // Clear existing data
-        await User.deleteMany({});
-        await Report.deleteMany({});
-        await Investigation.deleteMany({});
+        // Clear existing data (Note: truncate: true might fail if foreign keys exist)
+        // Order matters for deletion
+        await Investigation.destroy({ where: {} });
+        await Report.destroy({ where: {} });
+        await User.destroy({ where: {} });
 
         // 1. Create Admin
-        const admin = new User({
+        const admin = await User.create({
             name: 'System Admin',
             email: 'admin@hypershield.net',
             password: 'adminpassword',
             role: 'admin',
             isVerified: true
         });
-        await admin.save();
         console.log('Admin account created: admin@hypershield.net / adminpassword');
 
         // 2. Create Investigator
-        const officer = new User({
+        const officer = await User.create({
             name: 'Inspector Rajesh Kumar',
             email: 'rajesh@hypershield.net',
             password: 'password123',
             role: 'investigator',
             badgeId: 'HC-9920-IND',
-            kycStatus: 'verified',
-            isVerified: true
+            isVerified: true,
+            kycStatus: 'verified'
         });
-        await officer.save();
         console.log('Investigator created: rajesh@hypershield.net / password123');
 
         // 3. Create Citizen
-        const citizen = new User({
+        const citizen = await User.create({
             name: 'Aravind Swamy',
             email: 'aravind@gmail.com',
             password: 'password123',
             role: 'citizen',
             isVerified: true,
-            phone: '+91 94444-55555'
+            phone: '+91 9344205572'
         });
-        await citizen.save();
         console.log('Citizen created: aravind@gmail.com / password123');
 
         // 4. Create sample reports
         const reports = [
             {
-                reporter: citizen._id,
+                userId: citizen.id,
                 title: 'Suspicious Banking Link',
                 description: 'Received a WhatsApp message claiming to be from SBI asking for PAN update. Link seems fraudulent.',
                 category: 'Advanced Phishing / Smishing',
@@ -63,28 +61,31 @@ const seedData = async () => {
                 complaintId: 'CR-100201'
             },
             {
-                reporter: citizen._id,
+                userId: citizen.id,
                 title: 'E-commerce Scam',
                 description: 'Paid Rs. 5000 for a smartphone on a fake Instagram store. Product never delivered and account blocked me.',
                 category: 'Data Exfiltration Event',
                 severity: 'high',
-                status: 'reported',
+                status: 'pending',
                 location: 'Bangalore, India',
                 complaintId: 'CR-100202'
             }
         ];
 
-        const createdReports = await Report.insertMany(reports);
+        const createdReports = [];
+        for (const r of reports) {
+            const report = await Report.create(r);
+            createdReports.push(report);
+        }
         console.log('Sample reports created');
 
         // 5. Assign first report to Investigator
-        const investigation = new Investigation({
-            report: createdReports[0]._id,
-            investigators: [officer._id],
+        await Investigation.create({
+            reportId: createdReports[0].id,
+            investigatorIds: [officer.id],
             status: 'active',
-            notes: [{ content: 'Initial assessment completed. Phishing domain flagged.', author: officer._id }]
+            notes: [{ content: 'Initial assessment completed. Phishing domain flagged.', authorId: officer.id, date: new Date() }]
         });
-        await investigation.save();
         console.log('Investigation case assigned to Rajesh Kumar');
 
         console.log('--- SEEDING COMPLETE ---');

@@ -44,16 +44,25 @@ const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
-    twoFactorSecret: {
-        type: DataTypes.STRING,
-        allowNull: true
+    kycStatus: {
+        type: DataTypes.ENUM('pending', 'verified', 'rejected'),
+        defaultValue: 'pending'
     },
-    isTwoFactorEnabled: { // Fixed name from previous plan
+    isTwoFactorEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    // New fields for Email/2FA OTP
+    loginOtp: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    loginOtpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     loginHistory: {
-        type: DataTypes.JSON, // Store login history array
+        type: DataTypes.JSON,
         allowNull: true,
         defaultValue: []
     }
