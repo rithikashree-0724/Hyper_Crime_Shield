@@ -29,7 +29,9 @@ const SystemStatus = () => {
                 </div>
                 <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-1">
                     <div className="text-[10px] text-text-muted font-black uppercase tracking-widest">Est. Response Lag</div>
-                    <div className="text-white font-mono text-xl font-black italic tracking-tighter">0.4ms <span className="text-[10px] text-text-secondary not-italic font-bold">RTT</span></div>
+                    <div className="text-white font-mono text-xl font-black italic tracking-tighter">
+                        {Math.floor(Math.random() * 10) + 1}.{Math.floor(Math.random() * 9)}ms <span className="text-[10px] text-text-secondary not-italic font-bold">RTT</span>
+                    </div>
                 </div>
             </div>
 

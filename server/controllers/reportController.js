@@ -64,6 +64,12 @@ exports.createReport = async (req, res) => {
             location
         });
         await report.save();
+
+        // Real-time Update
+        if (req.io) {
+            req.io.emit('new_report', report);
+        }
+
         res.status(201).json(report);
     } catch (err) {
         console.error("DATA_ERR: Failed to commit report to storage cluster.", err);
@@ -107,6 +113,12 @@ exports.updateReportStatus = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized' });
         }
         const report = await Report.findByIdAndUpdate(id, { status, updatedAt: Date.now() }, { new: true });
+
+        // Real-time Update
+        if (req.io) {
+            req.io.emit('report_updated', report);
+        }
+
         res.json(report);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });

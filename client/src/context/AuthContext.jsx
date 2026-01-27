@@ -11,10 +11,11 @@ export const AuthProvider = ({ children }) => {
     const [isLockdown, setIsLockdown] = useState(false);
 
     useEffect(() => {
-        let token = localStorage.getItem('token');
-        if (!token) {
-            token = 'demo-token';
-            localStorage.setItem('token', token);
+        const token = localStorage.getItem('token');
+        if (token && token !== 'demo-token') {
+            // In a real app, you'd verify the token with the server here
+            // For now, we'll just keep it if it looks valid
+            // setLoading(false); 
         }
         setLoading(false);
     }, []);
@@ -32,13 +33,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const registerUser = async (formData) => {
+        try {
+            const { data } = await API.register(formData);
+            localStorage.setItem('token', data.token);
+            setUser(data.user);
+            return { success: true };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || 'Registration failed' };
+        }
+    };
+
     const logoutUser = () => {
         localStorage.removeItem('token');
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, login: loginUser, logout: logoutUser, isLockdown, toggleLockdown }}>
+        <AuthContext.Provider value={{ user, setUser, loading, login: loginUser, register: registerUser, logout: logoutUser, isLockdown, toggleLockdown }}>
             {children}
         </AuthContext.Provider>
     );

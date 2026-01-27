@@ -7,7 +7,7 @@ import heroImage from '../assets/hero.png';
 const Home = () => {
   return (
     <div className="min-h-screen relative overflow-hidden selection:bg-accent-cyan/20 bg-[#060a0f] text-slate-100 font-body">
-      
+
       {/* Background mesh */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-accent-cyan/10 rounded-full blur-[140px] animate-pulse-slow" />
@@ -28,20 +28,19 @@ const Home = () => {
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accent-cyan/10 border border-accent-cyan/20 rounded-full w-fit mx-auto lg:mx-0 shadow-[0_0_20px_rgba(0,245,255,0.1)]">
                 <span className="size-2 rounded-full bg-accent-cyan animate-pulse" />
                 <span className="text-[10px] font-black text-accent-cyan uppercase tracking-[0.2em]">
-                  Independent Defense Node v4.0
+                  Community Safety Portal
                 </span>
               </div>
 
               <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-white">
-                Shielding the <br />
+                Making Our <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-emerald">
-                  Privatized Grid.
+                  Community Safer.
                 </span>
               </h1>
 
               <p className="text-lg md:text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto lg:mx-0 font-medium">
-                We are the Shield Alliance. An elite coalition providing non-governmental threat
-                neutralization and digital sovereignty for the global elite and decentralized nodes.
+                We provide a secure platform for citizens to report crimes and collaborate with law enforcement to build a safer future.
               </p>
 
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -49,7 +48,7 @@ const Home = () => {
                   to="/report-crime"
                   className="h-14 px-8 rounded-2xl bg-gradient-to-r from-accent-cyan to-accent-blue text-slate-950 font-black uppercase tracking-widest text-sm shadow-xl shadow-accent-cyan/20 hover:scale-[1.02] transition-transform flex items-center gap-3 group"
                 >
-                  Initiate Intake
+                  Report a Crime
                   <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">
                     rocket_launch
                   </span>
@@ -59,22 +58,22 @@ const Home = () => {
                   to="/how-it-works"
                   className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-sm hover:bg-white/10 transition-all flex items-center"
                 >
-                  Our Sovereignty
+                  How It Works
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 pt-6 border-t border-white/5 mt-2 text-center lg:text-left">
                 <div>
-                  <p className="text-3xl font-black text-white tracking-tighter">0%</p>
-                  <p className="text-[10px] text-accent-cyan font-black uppercase tracking-widest mt-1">Gvt. Oversight</p>
+                  <p className="text-3xl font-black text-white tracking-tighter">24/7</p>
+                  <p className="text-[10px] text-accent-cyan font-black uppercase tracking-widest mt-1">Active Monitoring</p>
                 </div>
                 <div>
                   <p className="text-3xl font-black text-white tracking-tighter">100%</p>
-                  <p className="text-[10px] text-accent-violet font-black uppercase tracking-widest mt-1">Data Sovereignty</p>
+                  <p className="text-[10px] text-accent-violet font-black uppercase tracking-widest mt-1">Secure</p>
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-3xl font-black text-white tracking-tighter">∞</p>
-                  <p className="text-[10px] text-accent-emerald font-black uppercase tracking-widest mt-1">Encrypted Uptime</p>
+                  <p className="text-[10px] text-accent-emerald font-black uppercase tracking-widest mt-1">Reliability</p>
                 </div>
               </div>
             </div>
@@ -95,7 +94,7 @@ const Home = () => {
                   <div className="flex items-center gap-4">
                     <div className="size-3 rounded-full bg-accent-cyan shadow-[0_0_15px_rgba(0,245,255,0.8)] animate-pulse" />
                     <span className="text-xs font-black uppercase tracking-[0.3em] text-accent-cyan">
-                      VOID_LINK: ACTIVE_NODES_999+
+                      System Active
                     </span>
                   </div>
                 </div>
@@ -112,18 +111,18 @@ const Home = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <span className="text-[10px] font-black uppercase tracking-[1em] text-accent-violet">
-                Elite_Protocols
+                Our Features
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-white mt-5 tracking-tight">
-                The Independent <span className="italic text-accent-emerald">Counter-Measure.</span>
+                How We <span className="italic text-accent-emerald">Protect You.</span>
               </h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { title: 'Zero-Knowledge Logs', desc: 'Secure reporting where even we cannot decrypt your identity meta-tags.', icon: 'lock_open', color: 'text-accent-cyan' },
-                { title: 'Kinetic Containment', desc: 'Rapid digital-to-physical node isolation via private responder networks.', icon: 'bolt', color: 'text-accent-violet' },
-                { title: 'VoidSync Archive', desc: 'Encrypted telemetry mirrored across 7 global independent data silos.', icon: 'cloud_sync', color: 'text-accent-emerald' }
+                { title: 'Secure & Anonymous', desc: 'Report crimes anonymously with full privacy protection.', icon: 'lock_open', color: 'text-accent-cyan' },
+                { title: 'Quick Action', desc: 'Direct connection to investigators for faster response.', icon: 'bolt', color: 'text-accent-violet' },
+                { title: 'Evidence Management', desc: 'Securely upload and store digital evidence.', icon: 'cloud_sync', color: 'text-accent-emerald' }
               ].map((f, i) => (
                 <div key={i} className="glass-card p-10 rounded-[40px] group hover:bg-white/[0.04] transition-all border-white/5 relative overflow-hidden">
                   <div className={`size-14 bg-white/5 rounded-2xl flex items-center justify-center ${f.color} mb-8 group-hover:scale-110 transition-transform`}>

@@ -11,15 +11,15 @@ const Logo = () => {
 
                 <img
                     src={logoImage}
-                    alt="Shield Alliance Shield"
-                    className="w-full h-full object-contain relative z-10 brightness-110 contrast-125 drop-shadow-[0_0_12px_rgba(0,245,255,0.4)]"
+                    alt="Hyper Crime Shield"
+                    className="w-full h-full object-contain relative z-10"
                 />
             </div>
             <div className="flex flex-col">
-                <h1 className="text-2xl font-black tracking-tighter text-white font-display leading-[0.85] bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-accent-cyan/80">
-                    SHIELD<span className="text-accent-cyan italic">_ALLIANCE</span>
+                <h1 className="text-2xl font-black tracking-tighter text-white font-display leading-[0.85]">
+                    Hyper <span className="text-accent-cyan">Guard</span>
                 </h1>
-                <p className="text-[7px] font-black text-accent-cyan/60 uppercase tracking-[0.4em] mt-1 ml-0.5">Global Defense Initiative</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Crime Shield System</p>
             </div>
         </div>
     );

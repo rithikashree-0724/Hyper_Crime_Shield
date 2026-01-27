@@ -7,7 +7,19 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['citizen', 'investigator', 'admin'], default: 'citizen' },
     badgeId: { type: String },
-    createdAt: { type: Date, default: Date.now }
+    phone: { type: String },
+    profileImage: { type: String },
+    kycStatus: { type: String, enum: ['pending', 'verified', 'rejected'], default: 'pending' },
+    isVerified: { type: Boolean, default: false }, // For email/admin approval
+    createdAt: { type: Date, default: Date.now },
+    twoFactorSecret: { type: String }, // For TOTP
+    isTwoFactorEnabled: { type: Boolean, default: false },
+    loginHistory: [{
+        timestamp: { type: Date, default: Date.now },
+        ip: { type: String },
+        device: { type: String }
+    }],
+    isSuspended: { type: Boolean, default: false }
 });
 
 userSchema.pre('save', async function (next) {

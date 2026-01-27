@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Report = require('./models/Report');
+const Investigation = require('./models/Investigation');
 require('dotenv').config();
 
 const seedData = async () => {
@@ -11,49 +12,82 @@ const seedData = async () => {
         // Clear existing data
         await User.deleteMany({});
         await Report.deleteMany({});
+        await Investigation.deleteMany({});
 
-        // Create a dummy officer
+        // 1. Create Admin
+        const admin = new User({
+            name: 'System Admin',
+            email: 'admin@hypershield.net',
+            password: 'adminpassword',
+            role: 'admin',
+            isVerified: true
+        });
+        await admin.save();
+        console.log('Admin account created: admin@hypershield.net / adminpassword');
+
+        // 2. Create Investigator
         const officer = new User({
-            name: 'Det. Sarah Connors',
-            email: 'officer@cyberguard.gov',
+            name: 'Inspector Rajesh Kumar',
+            email: 'rajesh@hypershield.net',
             password: 'password123',
             role: 'investigator',
-            badgeId: 'HC-9920-X'
+            badgeId: 'HC-9920-IND',
+            kycStatus: 'verified',
+            isVerified: true
         });
         await officer.save();
-        console.log('Officer created');
+        console.log('Investigator created: rajesh@hypershield.net / password123');
 
-        // Create sample reports
+        // 3. Create Citizen
+        const citizen = new User({
+            name: 'Aravind Swamy',
+            email: 'aravind@gmail.com',
+            password: 'password123',
+            role: 'citizen',
+            isVerified: true,
+            phone: '+91 94444-55555'
+        });
+        await citizen.save();
+        console.log('Citizen created: aravind@gmail.com / password123');
+
+        // 4. Create sample reports
         const reports = [
             {
-                reporter: officer._id,
-                title: 'Unauthorized Database Access',
-                description: 'Suspicious IP 192.168.1.105 attempted to bypass firewall on the core SQL server.',
-                category: 'Intrusion',
-                severity: 'high',
-                status: 'investigating'
-            },
-            {
-                reporter: officer._id,
-                title: 'Phishing Campaign Detected',
-                description: 'Bulk emails from "internal-it@security-cyber.com" targetting HR department.',
-                category: 'Phishing',
+                reporter: citizen._id,
+                title: 'Suspicious Banking Link',
+                description: 'Received a WhatsApp message claiming to be from SBI asking for PAN update. Link seems fraudulent.',
+                category: 'Advanced Phishing / Smishing',
                 severity: 'medium',
-                status: 'reported'
+                status: 'investigating',
+                location: 'Chennai, India',
+                complaintId: 'CR-100201'
             },
             {
-                reporter: officer._id,
-                title: 'Ransomware "LockBit" Execution',
-                description: 'Endpoint WP-0023 infected with LockBit 3.0. Files encrypted. Initial isolation complete.',
-                category: 'Ransomware',
-                severity: 'critical',
-                status: 'investigating'
+                reporter: citizen._id,
+                title: 'E-commerce Scam',
+                description: 'Paid Rs. 5000 for a smartphone on a fake Instagram store. Product never delivered and account blocked me.',
+                category: 'Data Exfiltration Event',
+                severity: 'high',
+                status: 'reported',
+                location: 'Bangalore, India',
+                complaintId: 'CR-100202'
             }
         ];
 
-        await Report.insertMany(reports);
+        const createdReports = await Report.insertMany(reports);
         console.log('Sample reports created');
 
+        // 5. Assign first report to Investigator
+        const investigation = new Investigation({
+            report: createdReports[0]._id,
+            investigators: [officer._id],
+            status: 'active',
+            notes: [{ content: 'Initial assessment completed. Phishing domain flagged.', author: officer._id }]
+        });
+        await investigation.save();
+        console.log('Investigation case assigned to Rajesh Kumar');
+
+        console.log('--- SEEDING COMPLETE ---');
         process.exit();
     } catch (err) {
         console.error('Seeding error:', err);

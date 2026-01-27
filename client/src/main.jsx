@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext'
+import { RealTimeProvider } from './context/RealTimeContext'
 
 console.log("HYPERSHIELD_BOOT: Grid Initialized. Mounting Application...");
 
@@ -11,7 +12,9 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <AuthProvider>
-        <App />
+        <RealTimeProvider>
+          <App />
+        </RealTimeProvider>
       </AuthProvider>
     </React.StrictMode>,
   );

@@ -12,12 +12,11 @@ const HowItWorks = () => {
                 {/* Hero section */}
                 <div className="text-center mb-24 animate-fade-in">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-6">
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">NIST Incident Response Framework</span>
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Investigative Standard</span>
                     </div>
-                    <h1 className="text-5xl font-extrabold tracking-tight mb-8">The Response Lifecycle</h1>
+                    <h1 className="text-5xl font-extrabold tracking-tight mb-8">How We Handle Cases</h1>
                     <p className="max-w-2xl mx-auto text-lg text-text-secondary leading-relaxed font-medium">
-                        Our standardized workflow ensures forensic integrity and efficient threat mitigation
-                        following international cyber-security best practices.
+                        We follow a strict process to ensure every report is handled professionally and effectively.
                     </p>
                 </div>
 
@@ -26,10 +25,10 @@ const HowItWorks = () => {
                     <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5 hidden lg:block"></div>
 
                     {[
-                        { step: '01', title: 'Incident Identification', desc: 'Secure intake of incident telemetry, system logs, and attacker signatures via TLS-encrypted nodes.', icon: 'search_check' },
-                        { step: '02', title: 'Triage & Analysis', desc: 'CSIRT officers perform root-cause analysis and threat classification based on CVE and ATT&CK frameworks.', icon: 'analytics' },
-                        { step: '03', title: 'Containment & Eradication', desc: 'Isolation of affected subnets and neutralization of malicious payloads to prevent lateral movement.', icon: 'shield_lock' },
-                        { step: '04', title: 'Recovery & Post-Mortem', desc: 'Restoration of services from validated backups and final audit reporting for legal and insurance compliance.', icon: 'history' }
+                        { step: '01', title: 'Report Received', desc: 'We receive your secure report with all provided details and evidence.', icon: 'search_check' },
+                        { step: '02', title: 'Review & Assignment', desc: 'An investigator reviews your case and assesses the situation.', icon: 'analytics' },
+                        { step: '03', title: 'Action & Investigation', desc: 'Investigators take necessary actions to gather more info or stop the crime.', icon: 'shield_lock' },
+                        { step: '04', title: 'Resolution', desc: 'The case is resolved, and you receive a final report on the outcome.', icon: 'history' }
                     ].map((item, i) => (
                         <div key={i} className={`flex flex-col lg:flex-row items-center gap-8 ${i % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
                             <div className="flex-1 w-full">
@@ -60,10 +59,10 @@ const HowItWorks = () => {
                     </div>
                     <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-6 text-white">Authorized Reporting Only</h2>
                     <p className="max-w-xl text-text-secondary mb-10 font-medium leading-relaxed italic">
-                        All submissions are subject to legal verification. Provide accurate telemetry to ensure compliance with digital evidence regulations.
+                        Please provide accurate details to help us investigate effectively.
                     </p>
                     <Link to="/report-crime" className="btn-primary h-14 px-10 text-lg">
-                        Submit Official Log
+                        Start a Report
                     </Link>
                 </div>
             </main>

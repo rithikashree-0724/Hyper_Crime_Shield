@@ -30,6 +30,10 @@
   .nav-link {
     @apply flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-text-secondary hover:text-white hover:bg-white/5 transition-all;
   }
+
+  .input-field {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-text-muted focus:ring-1 focus:ring-primary focus:border-primary/50 outline-none transition-all;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
