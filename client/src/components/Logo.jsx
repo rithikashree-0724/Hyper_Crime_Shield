@@ -16,10 +16,10 @@ const Logo = () => {
                 />
             </div>
             <div className="flex flex-col">
-                <h1 className="text-2xl font-black tracking-tighter text-white font-display leading-[0.85]">
+                <h1 className="text-2xl font-black tracking-tighter text-text-primary font-display leading-[0.85]">
                     Hyper <span className="text-accent-cyan">Guard</span>
                 </h1>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Crime Shield System</p>
+                <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Crime Shield System</p>
             </div>
         </div>
     );

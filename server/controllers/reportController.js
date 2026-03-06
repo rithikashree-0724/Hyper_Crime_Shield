@@ -1,126 +1,137 @@
-const Report = require('../models/Report');
+const { Report, User, Investigation, AuditLog } = require('../models');
+const { trackStatusChange } = require('../utils/activityHelper');
 
-// Enhanced Mock Data Store (Process Persistence)
-let MOCK_REPORTS = [
-    {
-        _id: 'RPT-2026-001',
-        title: 'Unauthorized Database Exfiltration Attempt',
-        description: 'Detected suspicious outbound traffic on port 1433 originating from node 04. Data packets matched the profile of client credit meta-data. Source IP: 192.168.1.105.',
-        category: 'Information Security Breach',
-        severity: 'high',
-        status: 'investigating',
-        createdAt: new Date(Date.now() - 3600000 * 2) // 2 hours ago
-    },
-    {
-        _id: 'RPT-2026-002',
-        title: 'Phishing Pattern: "IT-SystemHandshake"',
-        description: 'Institutional-wide phishing campaign identified. Direct-action emails from spoofed "admin@hypershield-net" domain. Targeted executive leadership segments.',
-        category: 'Advanced Phishing / Smishing',
-        severity: 'medium',
-        status: 'reported',
-        createdAt: new Date(Date.now() - 3600000 * 5) // 5 hours ago
-    },
-    {
-        _id: 'RPT-2026-003',
-        title: 'Ransomware "LockBit" Execution Trace',
-        description: 'Endpoint WP-0023 infected with LockBit 3.0 variant. Primary file-server encrypted. Segment isolated within 4.2ms of detection.',
-        category: 'Malicious Code Execution',
-        severity: 'critical',
-        status: 'investigating',
-        createdAt: new Date(Date.now() - 3600000 * 12) // 12 hours ago
-    }
-];
-
-exports.createReport = async (req, res) => {
+/**
+ * @desc Create new crime report with auto-assignment
+ */
+exports.createReport = async (req, res, next) => {
     try {
-        const { title, description, category, severity, location } = req.body;
-        const evidence = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+        const { title, description, category, severity, location, isAnonymous, suspects, incidentDate } = req.body;
+        const evidence = req.files ? req.files.map(file => file.path) : [];
 
-        // Persistence Strategy: If DB is down, use Mock store
-        if (process.env.USE_MOCK_DATA === 'true') {
-            const newReport = {
-                _id: `RPT-2026-${Math.floor(100 + Math.random() * 900)}`,
-                title,
-                description,
-                category,
-                severity,
-                evidence,
-                location,
-                status: 'reported',
-                createdAt: new Date()
-            };
-            MOCK_REPORTS.unshift(newReport);
-            console.log(`PERSISTENCE_LOG: Incident committed to memory segment: ${newReport._id}`);
-            return res.status(201).json(newReport);
-        }
+        // Generate Custom Complaint ID
+        const date = new Date();
+        const year = date.getFullYear();
+        const count = await Report.count();
+        const complaintId = `CRIME-${year}-${(count + 1).toString().padStart(4, '0')}`;
 
-        const report = new Report({
-            reporter: req.user.id,
+        // 1. Create the Report
+        const report = await Report.create({
+            userId: req.user.id,
+            complaintId,
             title,
             description,
             category,
             severity,
-            evidence,
-            location
+            location,
+            isAnonymous: isAnonymous === 'true' || isAnonymous === true,
+            suspects,
+            incidentDate,
+            evidence
         });
-        await report.save();
 
-        // Real-time Update
+        // 2. Auto-Assignment Logic (Department-Based)
+        const categoryMap = {
+            'Financial Fraud': 'financial@hypershield.net',
+            'Online Fraud': 'financial@hypershield.net',
+            'Identity Theft': 'identity@hypershield.net',
+            'Cyber Bullying': 'bullying@hypershield.net',
+            'Phishing Attack': 'phishing@hypershield.net',
+            'Malware & Virus': 'malware@hypershield.net',
+            'Data Breach': 'databreach@hypershield.net'
+        };
+
+        const targetEmail = categoryMap[category] || 'financial@hypershield.net'; // Default to financial if no match
+        const investigator = await User.findOne({ where: { email: targetEmail, role: 'investigator' } });
+
+        let targetInvestigatorId = investigator ? investigator.id : null;
+
+        if (!targetInvestigatorId) {
+            // Fallback: Find any active investigator if department match fails
+            const backupInv = await User.findOne({ where: { role: 'investigator', isVerified: true } });
+            targetInvestigatorId = backupInv ? backupInv.id : null;
+        }
+
+        // 3. Create Investigation Record
+        await Investigation.create({
+            reportId: report.id,
+            status: 'active',
+            investigatorIds: targetInvestigatorId ? [targetInvestigatorId] : [],
+        });
+
+        // 4. Audit Log
+        await AuditLog.create({
+            userId: req.user.id,
+            action: 'REPORT_CREATED',
+            resource: 'Report',
+            resourceId: report.id,
+            details: { complaintId: report.complaintId }
+        });
+
+        res.status(201).json({ success: true, data: report });
+
         if (req.io) {
             req.io.emit('new_report', report);
         }
-
-        res.status(201).json(report);
     } catch (err) {
-        console.error("DATA_ERR: Failed to commit report to storage cluster.", err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };
 
-exports.getReports = async (req, res) => {
+/**
+ * @desc Get reports for current user or all for admin/investigator
+ */
+exports.getReports = async (req, res, next) => {
     try {
-        if (process.env.USE_MOCK_DATA === 'true') {
-            return res.json(MOCK_REPORTS);
+        let options = {
+            include: [{ model: User, as: 'user', attributes: ['name', 'role'] }],
+            order: [['createdAt', 'DESC']]
+        };
+
+        if (req.user.role === 'citizen') {
+            options.where = { userId: req.user.id };
         }
 
-        let query = {};
-        if (req.user.role === 'citizen') {
-            query.reporter = req.user.id;
-        }
-        const reports = await Report.find(query).populate('reporter', 'name email role').sort({ createdAt: -1 });
-        res.json(reports);
+        const reports = await Report.findAll(options);
+        res.json({ success: true, data: reports });
     } catch (err) {
-        // Fallback for DB connectivity loss
-        res.json(MOCK_REPORTS);
+        next(err);
     }
 };
 
-exports.updateReportStatus = async (req, res) => {
+/**
+ * @desc Update report status and track history
+ */
+exports.updateReportStatus = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
 
-        if (process.env.USE_MOCK_DATA === 'true') {
-            const report = MOCK_REPORTS.find(r => r._id === id);
-            if (report) {
-                report.status = status;
-                report.updatedAt = new Date();
-                return res.json(report);
-            }
-        }
+        const report = await Report.findByPk(id);
+        if (!report) return res.status(404).json({ message: 'Report not found' });
 
-        if (req.user.role === 'citizen' && status !== 'resolved') {
+        if (req.user.role === 'citizen' && report.userId !== req.user.id) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
-        const report = await Report.findByIdAndUpdate(id, { status, updatedAt: Date.now() }, { new: true });
 
-        // Real-time Update
+        const oldStatus = report.status;
+        report.status = status;
+        await report.save();
+
+        await trackStatusChange({
+            reportId: report.id,
+            userId: report.userId,
+            changedBy: req.user.id,
+            oldStatus,
+            newStatus: status
+        });
+
         if (req.io) {
             req.io.emit('report_updated', report);
         }
 
-        res.json(report);
+        res.json({ success: true, data: report });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };

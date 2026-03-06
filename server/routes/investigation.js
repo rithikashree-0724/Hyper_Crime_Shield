@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const { trackStatusChange } = require('../utils/activityHelper');
 const Report = require('../models/Report');
 const Investigation = require('../models/Investigation');
 
 // Get assigned investigations (Investigator) or all (Admin)
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req, res, next) => {
     try {
         let options = {
             include: [{ model: Report, as: 'report' }]
@@ -24,15 +25,14 @@ router.get('/', auth, async (req, res) => {
         }
 
         const investigations = await Investigation.findAll(options);
-        res.json(investigations);
+        res.json({ success: true, data: investigations });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Assign Investigator (Admin or self-claim)
-router.post('/:reportId/assign', auth, async (req, res) => {
+router.post('/:reportId/assign', auth, async (req, res, next) => {
     try {
         const { investigatorId } = req.body;
         const targetId = investigatorId || req.user.id;
@@ -42,13 +42,20 @@ router.post('/:reportId/assign', auth, async (req, res) => {
         if (!investigation) {
             investigation = await Investigation.create({
                 reportId: req.params.reportId,
-                investigatorIds: [targetId]
+                investigatorIds: [targetId],
+                primaryInvestigatorId: targetId
             });
         } else {
             let ids = investigation.investigatorIds || [];
             if (!ids.includes(targetId)) {
                 ids.push(targetId);
                 investigation.investigatorIds = ids;
+
+                // If no primary is set, set this one
+                if (!investigation.primaryInvestigatorId) {
+                    investigation.primaryInvestigatorId = targetId;
+                }
+
                 investigation.changed('investigatorIds', true);
                 await investigation.save();
             }
@@ -60,15 +67,14 @@ router.post('/:reportId/assign', auth, async (req, res) => {
             { where: { id: req.params.reportId } }
         );
 
-        res.json(investigation);
+        res.json({ success: true, data: investigation });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Add Note
-router.post('/:id/note', auth, async (req, res) => {
+router.post('/:id/note', auth, async (req, res, next) => {
     try {
         const investigation = await Investigation.findByPk(req.params.id);
         if (!investigation) return res.status(404).json({ message: 'Investigation not found' });
@@ -84,15 +90,14 @@ router.post('/:id/note', auth, async (req, res) => {
         investigation.changed('notes', true);
         await investigation.save();
 
-        res.json(investigation);
+        res.json({ success: true, data: investigation });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Add Task
-router.post('/:id/task', auth, async (req, res) => {
+router.post('/:id/task', auth, async (req, res, next) => {
     try {
         const investigation = await Investigation.findByPk(req.params.id);
         if (!investigation) return res.status(404).json({ message: 'Investigation not found' });
@@ -108,15 +113,14 @@ router.post('/:id/task', auth, async (req, res) => {
         investigation.changed('tasks', true);
         await investigation.save();
 
-        res.json(investigation);
+        res.json({ success: true, data: investigation });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Toggle Task Completion
-router.patch('/:id/task/:index', auth, async (req, res) => {
+router.patch('/:id/task/:index', auth, async (req, res, next) => {
     try {
         const investigation = await Investigation.findByPk(req.params.id);
         if (!investigation) return res.status(404).json({ message: 'Investigation not found' });
@@ -131,15 +135,14 @@ router.patch('/:id/task/:index', auth, async (req, res) => {
             await investigation.save();
         }
 
-        res.json(investigation);
+        res.json({ success: true, data: investigation });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Set Final Outcome
-router.post('/:id/outcome', auth, async (req, res) => {
+router.post('/:id/outcome', auth, async (req, res, next) => {
     try {
         const investigation = await Investigation.findByPk(req.params.id);
         if (!investigation) return res.status(404).json({ message: 'Investigation not found' });
@@ -154,10 +157,9 @@ router.post('/:id/outcome', auth, async (req, res) => {
             { where: { id: investigation.reportId } }
         );
 
-        res.json(investigation);
+        res.json({ success: true, data: investigation });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 

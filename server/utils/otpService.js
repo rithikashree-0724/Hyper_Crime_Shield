@@ -8,32 +8,14 @@ exports.generateOTP = () => {
 };
 
 /**
- * Mock function to send email
- * In production, this would use nodemailer or a service like SendGrid
+ * Mock email sender for development
  */
-exports.sendMockEmail = (email, otp) => {
-    const timestamp = new Date().toLocaleString();
-    const logMessage = `
-┌──────────────────────────────────────────────────┐
-│ [EMAIL SERVICE] - ${timestamp}
-├──────────────────────────────────────────────────┤
-│ To: ${email}
-│ Subject: Security Verification Code
-│ 
-│ Hello,
-│ 
-│ You are receiving this email because you (or someone
-│ acting as you) requested a security verification 
-│ code for your HyperShield account.
-│ 
-│ Your One-Time Password (OTP) is:
-│ 
-│              >  ${otp}  <
-│ 
-│ This code is valid for 10 minutes.
-│ If you did not request this, please ignore this.
-└──────────────────────────────────────────────────┘
-`;
-    console.log(logMessage);
+exports.sendMockEmail = (to, otp) => {
+    console.log('-----------------------------------------');
+    console.log(`[MOCK EMAIL SERVICE]`);
+    console.log(`TO: ${to}`);
+    console.log(`SUBJECT: Security Verification Code`);
+    console.log(`BODY: Your OTP is ${otp}`);
+    console.log('-----------------------------------------');
     return true;
 };

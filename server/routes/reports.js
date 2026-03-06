@@ -4,18 +4,33 @@ const Report = require('../models/Report');
 const User = require('../models/User');
 const Investigation = require('../models/Investigation');
 const Message = require('../models/Message');
+const CaseHistory = require('../models/CaseHistory');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload'); // File upload middleware (Multer)
+const paginate = require('../middleware/paginate');
+const { trackStatusChange } = require('../utils/activityHelper');
+const { reportValidationRules, validate } = require('../middleware/validator');
+// const { generateReportsPDF, generateReportsExcel } = require('../utils/exportHelper');
+const { sendEmail, templates } = require('../utils/emailService');
 
 // Get All Reports (For Dashboard)
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, paginate, async (req, res, next) => {
     try {
+        const { limit, offset, page } = req.pagination;
         let options = {
             include: [
                 { model: User, as: 'user', attributes: ['name', 'email'] },
-                { model: Investigation, as: 'investigation' }
+                {
+                    model: Investigation,
+                    as: 'investigation',
+                    include: [
+                        { model: User, as: 'primaryInvestigator', attributes: ['name', 'email', 'department'] }
+                    ]
+                }
             ],
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
         };
 
         if (req.user.role === 'citizen') {
@@ -26,72 +41,43 @@ router.get('/', auth, async (req, res) => {
             // Or maybe filtered by status.
         }
 
-        const reports = await Report.findAll(options);
-        res.json(reports);
+        const { count, rows: reports } = await Report.findAndCountAll(options);
+        res.json({
+            success: true,
+            data: reports,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                pages: Math.ceil(count / limit)
+            }
+        });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 });
+
+const reportController = require('../controllers/reportController');
 
 // Create Report
-router.post('/', auth, upload.array('evidence'), async (req, res) => {
-    try {
-        const { title, description, category, severity, location, isAnonymous, suspects, incidentDate } = req.body;
+router.post('/', auth, upload.array('evidence'), reportValidationRules(), validate, reportController.createReport);
 
-        let evidencePaths = [];
-        if (req.files) {
-            evidencePaths = req.files.map(file => file.path);
-        }
-
-        // Generate Custom ID
-        const date = new Date();
-        const year = date.getFullYear();
-        const count = await Report.count();
-        const complaintId = `CRIME-${year}-${(count + 1).toString().padStart(4, '0')}`;
-
-        const report = await Report.create({
-            userId: req.user.id,
-            complaintId,
-            title,
-            description,
-            category,
-            severity,
-            location,
-            isAnonymous: isAnonymous === 'true' || isAnonymous === true,
-            suspects,
-            incidentDate,
-            evidence: evidencePaths // Sequelize handles JSON stringify if dialect supports JSON, else might need manual stringify? MySQL 5.7+ supports JSON.
-        });
-
-        // Return full report with user
-        // const fullReport = await Report.findByPk(report.id, { include: 'user' });
-
-        res.status(201).json(report);
-
-        // Real-time notification for investigators/admin
-        if (req.io) {
-            req.io.emit('new_report', report);
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
 
 // Get Single Report by ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req, res, next) => {
     try {
         const report = await Report.findByPk(req.params.id, {
             include: [
                 { model: User, as: 'user', attributes: ['name', 'email', 'phone'] },
                 { model: Investigation, as: 'investigation' },
+                { model: CaseHistory, as: 'history' },
                 {
                     model: Message,
                     as: 'messages',
-                    include: [{ model: User, as: 'sender', attributes: ['name', 'role'] }]
+                    include: [{ model: User, as: 'sender', attributes: ['name', 'role', 'department'] }]
                 }
-            ]
+            ],
+            order: [[{ model: Message, as: 'messages' }, 'createdAt', 'ASC']]
         });
 
         if (!report) return res.status(404).json({ message: 'Report not found' });
@@ -101,15 +87,19 @@ router.get('/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'Access Denied' });
         }
 
-        res.json(report);
+        // Map history to timeline for frontend
+        const reportData = report.toJSON();
+        reportData.timeline = reportData.history || [];
+        delete reportData.history;
+
+        res.json({ success: true, data: reportData });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 });
 
 // Update Report Status (Investigator/Admin)
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, async (req, res, next) => {
     try {
         if (req.user.role === 'citizen') {
             return res.status(403).json({ message: 'Not authorized to update status' });
@@ -120,23 +110,40 @@ router.put('/:id', auth, async (req, res) => {
 
         if (!report) return res.status(404).json({ message: 'Report not found' });
 
+        const oldStatus = report.status;
         report.status = status;
         await report.save();
 
-        res.json(report);
+        // Track History & Notify
+        await trackStatusChange({
+            reportId: report.id,
+            userId: report.userId,
+            changedBy: req.user.id,
+            oldStatus,
+            newStatus: status,
+            message: `Your report status has been updated to ${status}.`
+        });
+
+        // Send Email Notification
+        const user = await User.findByPk(report.userId);
+        if (user && user.email) {
+            const emailData = templates.statusUpdate(report);
+            await sendEmail(user.email, emailData.subject, emailData.text, emailData.html);
+        }
+
+        res.json({ success: true, data: report });
 
         // Real-time update
         if (req.io) {
             req.io.emit('report_updated', report);
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 });
 
 // Add Message to Report
-router.post('/:id/message', auth, async (req, res) => {
+router.post('/:id/message', auth, async (req, res, next) => {
     try {
         const { content } = req.body;
         const report = await Report.findByPk(req.params.id);
@@ -152,7 +159,7 @@ router.post('/:id/message', auth, async (req, res) => {
 
         // Fetch sender for response and emission
         const fullMessage = await Message.findByPk(message.id, {
-            include: [{ model: User, as: 'sender', attributes: ['name', 'role'] }]
+            include: [{ model: User, as: 'sender', attributes: ['name', 'role', 'department'] }]
         });
 
         // Emit Socket Event
@@ -160,50 +167,86 @@ router.post('/:id/message', auth, async (req, res) => {
             req.io.to(report.id.toString()).emit('receive_message', fullMessage);
         }
 
-        res.status(201).json(fullMessage);
+        res.status(201).json({ success: true, data: fullMessage });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 });
 
 // Get Messages for a Report
-router.get('/:id/messages', auth, async (req, res) => {
+router.get('/:id/messages', auth, async (req, res, next) => {
     try {
-        const Message = require('../models/Message');
         const messages = await Message.findAll({
             where: { reportId: req.params.id },
-            include: [{ model: User, as: 'sender', attributes: ['name', 'role'] }],
+            include: [{ model: User, as: 'sender', attributes: ['name', 'role', 'department'] }],
             order: [['createdAt', 'ASC']]
         });
-        res.json(messages);
+        res.json({ success: true, data: messages });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 });
 
 // Escalate Case
-router.put('/:id/escalate', auth, async (req, res) => {
+router.put('/:id/escalate', auth, async (req, res, next) => {
     try {
-        // Only Investigators/Admin can escalate? Or maybe citizens too if ignored?
-        // Let's assume Investigator initiates escalation.
         if (req.user.role === 'citizen') return res.status(403).json({ message: 'Not authorized' });
 
         const report = await Report.findByPk(req.params.id);
         if (!report) return res.status(404).json({ message: 'Report not found' });
 
+        const oldStatus = report.status;
         report.status = 'escalated';
         await report.save();
 
+        // Track History & Notify
+        await trackStatusChange({
+            reportId: report.id,
+            userId: report.userId,
+            changedBy: req.user.id,
+            oldStatus,
+            newStatus: 'escalated',
+            message: `Your report has been escalated for further review.`
+        });
+
         // Emit update
         const io = req.app.get('io');
-        if (io) io.to(report.id).emit('status_update', { status: 'escalated' });
+        if (io) io.to(report.id.toString()).emit('status_update', { status: 'escalated' });
 
-        res.json(report);
+        res.json({ success: true, data: report });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
+    }
+});
+
+const { generateReportsPDF, generateReportsExcel } = require('../utils/exportHelper');
+
+// Export Reports (Admin/Investigator)
+router.get('/export/pdf', auth, auth.authorize('admin', 'investigator'), async (req, res, next) => {
+    try {
+        const reports = await Report.findAll({
+            include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+        });
+        const pdfBuffer = await generateReportsPDF(reports);
+        res.header('Content-Type', 'application/pdf');
+        res.attachment('crime_reports.pdf');
+        res.send(pdfBuffer);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/export/excel', auth, auth.authorize('admin', 'investigator'), async (req, res, next) => {
+    try {
+        const reports = await Report.findAll({
+            include: [{ model: User, as: 'user', attributes: ['name', 'email'] }]
+        });
+        const excelBuffer = generateReportsExcel(reports);
+        res.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.attachment('crime_reports.xlsx');
+        res.send(excelBuffer);
+    } catch (err) {
+        next(err);
     }
 });
 

@@ -5,10 +5,10 @@ import Logo from '../components/Logo';
 
 const HowItWorks = () => {
     return (
-        <div className="min-h-screen bg-background-dark text-slate-100 font-body pb-24">
+        <div className="min-h-screen bg-background text-text-primary font-body pb-24">
             <Header />
 
-            <main className="max-w-5xl mx-auto px-6 pt-20">
+            <main className="max-w-5xl mx-auto px-6 pt-[160px]">
                 {/* Hero section */}
                 <div className="text-center mb-24 animate-fade-in">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-6">
@@ -22,7 +22,7 @@ const HowItWorks = () => {
 
                 {/* Vertical Timeline */}
                 <div className="relative space-y-16 lg:space-y-0">
-                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5 hidden lg:block"></div>
+                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border hidden lg:block"></div>
 
                     {[
                         { step: '01', title: 'Report Received', desc: 'We receive your secure report with all provided details and evidence.', icon: 'search_check' },
@@ -32,7 +32,7 @@ const HowItWorks = () => {
                     ].map((item, i) => (
                         <div key={i} className={`flex flex-col lg:flex-row items-center gap-8 ${i % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
                             <div className="flex-1 w-full">
-                                <div className={`glass-card p-10 rounded-3xl border-white/5 hover:border-primary/20 transition-all ${i % 2 === 1 ? 'lg:mr-auto text-left' : 'lg:ml-auto text-right'}`}>
+                                <div className={`glass-card p-10 rounded-3xl hover:border-primary/20 transition-all ${i % 2 === 1 ? 'lg:mr-auto text-left' : 'lg:ml-auto text-right'}`}>
                                     <div className={`flex items-center gap-4 mb-4 ${i % 2 === 1 ? 'justify-start' : 'justify-end'}`}>
                                         <span className="text-primary font-mono text-xl">{item.step}</span>
                                         <h3 className="text-2xl font-bold tracking-tight">{item.title}</h3>
@@ -43,7 +43,7 @@ const HowItWorks = () => {
                                 </div>
                             </div>
 
-                            <div className="relative z-10 size-16 rounded-2xl bg-surface-dark border-2 border-primary/20 flex items-center justify-center shrink-0 shadow-lg shadow-primary/10">
+                            <div className="relative z-10 size-16 rounded-2xl bg-background border-2 border-primary/20 flex items-center justify-center shrink-0 shadow-lg shadow-primary/10">
                                 <span className="material-symbols-outlined text-primary text-3xl">{item.icon}</span>
                             </div>
 
@@ -57,7 +57,7 @@ const HowItWorks = () => {
                     <div className="size-20 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-10">
                         <span className="material-symbols-outlined text-5xl">verified_user</span>
                     </div>
-                    <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-6 text-white">Authorized Reporting Only</h2>
+                    <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-6">Authorized Reporting Only</h2>
                     <p className="max-w-xl text-text-secondary mb-10 font-medium leading-relaxed italic">
                         Please provide accurate details to help us investigate effectively.
                     </p>

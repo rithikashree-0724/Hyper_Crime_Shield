@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - JWT_SECRET=your_production_secret_key_here
+      - JWT_REFRESH_SECRET=your_production_refresh_secret_here
+      - DB_NAME=crime_shield.sqlite
+    volumes:
+      - ./server/logs:/usr/src/app/logs
+      - ./server/backups:/usr/src/app/backups
+      - ./server/uploads:/usr/src/app/uploads
+    restart: always
+
+  # Optional: Frontend service if being served by Nginx in production
+  # frontend:
+  #   build: ./client
+  #   ports:
+  #     - "80:80"

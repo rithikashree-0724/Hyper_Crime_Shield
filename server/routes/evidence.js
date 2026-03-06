@@ -39,7 +39,7 @@ const calculateHash = (filePath) => {
 };
 
 // Upload Evidence
-router.post('/:reportId', auth, upload.single('file'), async (req, res) => {
+router.post('/:reportId', auth, upload.single('file'), async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
@@ -66,24 +66,22 @@ router.post('/:reportId', auth, upload.single('file'), async (req, res) => {
             await report.save();
         }
 
-        res.status(201).json(evidence);
+        res.status(201).json({ success: true, data: evidence });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 
 // Get Evidence for a Report
-router.get('/:reportId', auth, async (req, res) => {
+router.get('/:reportId', auth, async (req, res, next) => {
     try {
         const evidence = await Evidence.findAll({
             where: { reportId: req.params.reportId },
             include: [{ model: User, as: 'uploader', attributes: ['name'] }]
         });
-        res.json(evidence);
+        res.json({ success: true, data: evidence });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 });
 

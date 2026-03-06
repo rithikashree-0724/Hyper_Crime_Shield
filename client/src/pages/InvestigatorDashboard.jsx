@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import { useRealTime } from '../context/RealTimeContext';
-import axios from 'axios';
+import Header from '../components/Header';
+import * as API_SERVICE from '../api';
 
 const InvestigatorDashboard = () => {
     const { user } = useAuth();
@@ -43,11 +43,9 @@ const InvestigatorDashboard = () => {
 
     const fetchCases = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/investigations', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setCases(res.data);
+            const res = await API_SERVICE.getInvestigations();
+            const data = res.data.data || res.data; // Handle both direct array and wrapped object
+            setCases(Array.isArray(data) ? data : []);
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -65,7 +63,15 @@ const InvestigatorDashboard = () => {
         }
     };
 
-    const filteredCases = filter === 'all' ? cases : cases.filter(c => c.report.status === filter);
+    const filteredCases = filter === 'all'
+        ? cases
+        : cases.filter(c => {
+            const s = c.report?.status?.toLowerCase();
+            if (filter === 'pending') return s === 'pending' || s === 'reported' || s === 'review';
+            if (filter === 'investigating') return s === 'investigating' || s === 'approved';
+            if (filter === 'closed') return s === 'closed' || s === 'resolved';
+            return s === filter;
+        });
 
     const stats = [
         { label: 'Total Cases', value: cases.length, icon: 'folder_open', color: 'blue' },
@@ -75,19 +81,31 @@ const InvestigatorDashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-background-dark text-slate-100 font-body">
+        <div className="min-h-screen bg-background text-text-primary font-body">
             <Header />
-            <main className="max-w-7xl mx-auto px-6 py-12">
+            <main className="max-w-7xl mx-auto px-6 pt-[160px] pb-24">
                 {/* Header Section */}
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 bg-gradient-to-r from-blue-900/20 to-amber-900/20 p-8 rounded-3xl border border-blue-500/10">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20 bg-gradient-to-r from-blue-500/10 to-amber-500/10 p-10 rounded-3xl border border-border">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="material-symbols-outlined text-amber-500">badge</span>
                             <span className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.3em]">Investigation Unit</span>
                         </div>
-                        <h1 className="text-4xl font-extrabold tracking-tight text-white">Officer Dashboard</h1>
-                        <p className="text-blue-200 mt-2 font-medium italic">Welcome back, Officer {user?.name || 'Unknown'}</p>
+                        <h1 className="text-4xl font-extrabold tracking-tight">Officer Dashboard</h1>
+                        <div className="flex flex-wrap items-center gap-4 mt-3">
+                            <p className="text-text-secondary font-medium italic text-lg">Welcome back, Officer {user?.name || 'Unknown'}</p>
+                            <div className="h-4 w-px bg-border hidden md:block"></div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg">
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Badge ID</span>
+                                    <span className="text-xs font-mono font-bold text-text-primary">{user?.badgeId || 'CCIU-8829'}</span>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Dept</span>
+                                    <span className="text-xs font-bold text-text-primary uppercase tracking-tight">{user?.department || 'Cyber Division'}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div className="flex gap-3">
                         {['all', 'pending', 'investigating', 'closed'].map((status) => (
@@ -96,7 +114,7 @@ const InvestigatorDashboard = () => {
                                 onClick={() => setFilter(status)}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filter === status
                                     ? 'bg-primary text-white'
-                                    : 'bg-white/5 text-text-muted hover:bg-white/10'
+                                    : 'bg-primary/10 text-text-muted hover:bg-primary/20'
                                     }`}
                             >
                                 {status}
@@ -106,21 +124,21 @@ const InvestigatorDashboard = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
                     {stats.map((stat, i) => (
-                        <div key={i} className={`glass-card p-8 rounded-2xl border-white/5 bg-${stat.color}-500/5 shadow-xl overflow-hidden relative`}>
+                        <div key={i} className={`glass-card p-8 rounded-2xl border-border relative overflow-hidden bg-${stat.color}-500/5`}>
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <span className="material-symbols-outlined text-4xl">{stat.icon}</span>
                             </div>
                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">{stat.label}</p>
-                            <h2 className="text-4xl font-extrabold text-white">{stat.value}</h2>
+                            <h2 className="text-4xl font-extrabold">{stat.value}</h2>
                         </div>
                     ))}
                 </div>
 
                 {/* Investigation Tools */}
-                <div className="grid md:grid-cols-3 gap-6 mb-12">
-                    <Link to="/resources" className="glass-card p-6 rounded-2xl border-white/5 hover:bg-white/[0.05] transition-all group">
+                <div className="grid md:grid-cols-3 gap-8 mb-24">
+                    <Link to="/resources" className="glass-card p-6 rounded-2xl group">
                         <div className="size-12 rounded-xl bg-purple-500/20 border border-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <span className="material-symbols-outlined text-2xl text-purple-500">school</span>
                         </div>
@@ -128,7 +146,7 @@ const InvestigatorDashboard = () => {
                         <p className="text-xs text-text-secondary">Access investigation guides and best practices</p>
                     </Link>
 
-                    <Link to="/support" className="glass-card p-6 rounded-2xl border-white/5 hover:bg-white/[0.05] transition-all group">
+                    <Link to="/support" className="glass-card p-6 rounded-2xl group">
                         <div className="size-12 rounded-xl bg-blue-500/20 border border-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <span className="material-symbols-outlined text-2xl text-blue-500">support_agent</span>
                         </div>
@@ -136,7 +154,7 @@ const InvestigatorDashboard = () => {
                         <p className="text-xs text-text-secondary">Get help with investigation tools and systems</p>
                     </Link>
 
-                    <Link to="/profile" className="glass-card p-6 rounded-2xl border-white/5 hover:bg-white/[0.05] transition-all group">
+                    <Link to="/profile" className="glass-card p-6 rounded-2xl group">
                         <div className="size-12 rounded-xl bg-green-500/20 border border-green-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <span className="material-symbols-outlined text-2xl text-green-500">verified_user</span>
                         </div>
@@ -146,8 +164,8 @@ const InvestigatorDashboard = () => {
                 </div>
 
                 {/* Cases List */}
-                <div className="glass-card rounded-2xl overflow-hidden border-white/5 shadow-2xl bg-surface-dark/20">
-                    <div className="p-6 border-b border-white/5">
+                <div className="glass-card rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="p-6 border-b border-border">
                         <h3 className="text-xl font-bold flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">work</span>
                             Assigned Cases ({filteredCases.length})
@@ -168,7 +186,7 @@ const InvestigatorDashboard = () => {
                         ) : (
                             <div className="grid gap-4">
                                 {filteredCases.map((investigation) => (
-                                    <div key={investigation.id} className="glass-card p-6 rounded-xl border-white/5 hover:bg-white/[0.03] transition-all group">
+                                    <div key={investigation.id} className="glass-card p-6 rounded-xl hover:bg-primary/5 transition-all group">
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-start gap-3 mb-3">
@@ -189,7 +207,7 @@ const InvestigatorDashboard = () => {
                                                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(investigation.report?.status)}`}>
                                                                 {investigation.report?.status}
                                                             </span>
-                                                            <span className="px-2 py-1 rounded-md bg-white/5 text-text-muted text-[10px] font-bold uppercase tracking-wider">
+                                                            <span className="px-2 py-1 rounded-md bg-primary/5 text-text-muted text-[10px] font-bold uppercase tracking-wider">
                                                                 Priority: {investigation.report?.severity || 'Medium'}
                                                             </span>
                                                         </div>
@@ -207,6 +225,12 @@ const InvestigatorDashboard = () => {
                                                         <span className="flex items-center gap-1">
                                                             <span className="material-symbols-outlined text-sm">note</span>
                                                             {investigation.notes.length} Notes
+                                                        </span>
+                                                    )}
+                                                    {investigation.report?.messages && (
+                                                        <span className="flex items-center gap-1 text-primary font-bold">
+                                                            <span className="material-symbols-outlined text-sm">chat</span>
+                                                            {investigation.report.messages.length} Messages
                                                         </span>
                                                     )}
                                                 </div>

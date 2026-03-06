@@ -8,12 +8,11 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isLockdown, setIsLockdown] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {
             const token = localStorage.getItem('token');
-            if (token && token !== 'demo-token') {
+            if (token) {
                 try {
                     const { data } = await API.getProfile();
                     setUser(data);
@@ -27,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const toggleLockdown = () => setIsLockdown(!isLockdown);
+
 
     const loginUser = async (email, password, code) => {
         try {
@@ -41,18 +40,32 @@ export const AuthProvider = ({ children }) => {
             setUser(data.user);
             return { success: true, user: data.user };
         } catch (err) {
-            return { success: false, message: err.response?.data?.message || 'Login failed' };
+            let message = 'Login failed';
+            const data = err.response?.data;
+
+            if (data?.message) message = data.message;
+            else if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                const firstError = data.errors[0];
+                message = typeof firstError === 'string' ? firstError : Object.values(firstError)[0];
+            }
+            else if (data?.error?.message) message = data.error.message;
+            else if (err.message) message = err.message;
+
+            return { success: false, message };
         }
     };
 
     const registerUser = async (formData) => {
         try {
             const { data } = await API.register(formData);
-            localStorage.setItem('token', data.token);
-            setUser(data.user);
-            return { success: true };
+            // Since verification is required, we don't set token or user yet
+            return { success: true, message: data.message };
         } catch (err) {
-            return { success: false, message: err.response?.data?.message || 'Registration failed' };
+            const message = err.response?.data?.message ||
+                err.response?.data?.error?.message ||
+                err.message ||
+                'Registration failed';
+            return { success: false, message };
         }
     };
 
@@ -62,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, login: loginUser, register: registerUser, logout: logoutUser, isLockdown, toggleLockdown }}>
+        <AuthContext.Provider value={{ user, setUser, loading, login: loginUser, register: registerUser, logout: logoutUser }}>
             {children}
         </AuthContext.Provider>
     );

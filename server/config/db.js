@@ -5,8 +5,8 @@ require('dotenv').config();
 // Use SQLite for zero-configuration setup
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.join(__dirname, '../database.sqlite'), // Stores DB in server/database.sqlite
-    logging: false
+    storage: path.join(__dirname, '..', 'database.sqlite'),
+    logging: (msg) => console.log(`[SEQUELIZE] ${msg}`)
 });
 
 const connectDB = async () => {

@@ -1,0 +1,278 @@
+
+  [32m[1mVITE[22m v6.4.1[39m  [2mready in [0m[1m843[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.5:[1m5173[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m4:38:48 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:49 pm[22m [31m[1m[vite][22m[39m [31mInternal server error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[31m     [36mconst[31m [user[33m,[31m setUser] [33m=[31m useState([36mnull[31m)[33m;[31m
+ [90m 10 |[31m     [36mconst[31m [loading[33m,[31m setLoading] [33m=[31m useState([36mtrue[31m)[33m;[31m
+[31m[1m>[22m[31m[90m 11 |[31m     [36mconst[31m [loading[33m,[31m setLoading] [33m=[31m useState([36mtrue[31m)[33m;[31m
+ [90m    |[31m            [31m[1m^[22m[31m
+ [90m 12 |[31m
+ [90m 13 |[31m     useEffect(() [33m=>[31m {
+ [90m 14 |[31m         [36mconst[31m checkAuth [33m=[31m [36masync[31m () [33m=>[31m {[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+      at constructor (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:365:19)
+      at JSXParserMixin.raise (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:6599:19)
+      at ScopeHandler.checkRedeclarationInScope (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:1619:19)
+      at ScopeHandler.declareName (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:1585:12)
+      at JSXParserMixin.declareNameFromIdentifier (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:7567:16)
+      at JSXParserMixin.checkIdentifier (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:7563:12)
+      at JSXParserMixin.checkLVal (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:7500:12)
+      at JSXParserMixin.checkLVal (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:7540:16)
+      at JSXParserMixin.parseVarId (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13402:10)
+      at JSXParserMixin.parseVar (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13373:12)
+      at JSXParserMixin.parseVarStatement (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13220:10)
+      at JSXParserMixin.parseStatementContent (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12841:23)
+      at JSXParserMixin.parseStatementLike (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12757:17)
+      at JSXParserMixin.parseStatementListItem (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12737:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13306:61)
+      at JSXParserMixin.parseBlockBody (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13299:10)
+      at JSXParserMixin.parseBlock (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13287:10)
+      at JSXParserMixin.parseFunctionBody (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12090:24)
+      at JSXParserMixin.parseArrowExpression (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12065:10)
+      at JSXParserMixin.parseParenAndDistinguishExpression (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:11677:12)
+      at JSXParserMixin.parseExprAtom (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:11321:23)
+      at JSXParserMixin.parseExprAtom (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:4764:20)
+      at JSXParserMixin.parseExprSubscripts (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:11071:23)
+      at JSXParserMixin.parseUpdate (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:11056:21)
+      at JSXParserMixin.parseMaybeUnary (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:11036:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10889:61)
+      at JSXParserMixin.parseExprOps (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10894:23)
+      at JSXParserMixin.parseMaybeConditional (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10871:23)
+      at JSXParserMixin.parseMaybeAssign (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10821:21)
+      at d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10790:39
+      at JSXParserMixin.allowInAnd (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12411:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:10790:17)
+      at JSXParserMixin.parseVar (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13374:91)
+      at JSXParserMixin.parseVarStatement (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13220:10)
+      at JSXParserMixin.parseStatementContent (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12841:23)
+      at JSXParserMixin.parseStatementLike (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12757:17)
+      at JSXParserMixin.parseStatementListItem (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12737:17)
+      at JSXParserMixin.parseExportDeclaration (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13924:17)
+      at JSXParserMixin.maybeParseExportDeclaration (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13883:31)
+      at JSXParserMixin.parseExport (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13802:29)
+      at JSXParserMixin.parseStatementContent (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12868:27)
+      at JSXParserMixin.parseStatementLike (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12757:17)
+      at JSXParserMixin.parseModuleItem (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12734:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13306:36)
+      at JSXParserMixin.parseBlockBody (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:13299:10)
+      at JSXParserMixin.parseProgram (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12612:10)
+      at JSXParserMixin.parseTopLevel (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:12602:25)
+      at JSXParserMixin.parse (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:14478:25)
+      at parse (d:\Crime project\Crime project\client\node_modules\@babel\parser\lib\index.js:14512:38)
+      at parser (d:\Crime project\Crime project\client\node_modules\@babel\core\lib\parser\index.js:41:34)
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+[2m4:38:50 pm[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: D:\Crime project\Crime project\client\src\context\AuthContext.jsx: Identifier 'loading' has already been declared. (11:11)
+
+[0m [90m  9 |[39m     [36mconst[39m [user[33m,[39m setUser] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m 10 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m [loading[33m,[39m setLoading] [33m=[39m useState([36mtrue[39m)[33m;[39m
+ [90m    |[39m            [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m     useEffect(() [33m=>[39m {
+ [90m 14 |[39m         [36mconst[39m checkAuth [33m=[39m [36masync[39m () [33m=>[39m {[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mD:/Crime project/Crime project/client/src/context/AuthContext.jsx[39m:11:11
+[33m  9  |      const [user, setUser] = useState(null);
+  10 |      const [loading, setLoading] = useState(true);
+  11 |      const [loading, setLoading] = useState(true);
+     |                       ^
+  12 |  
+  13 |      useEffect(() => {[39m
+^C

@@ -51,10 +51,4 @@ const Evidence = sequelize.define('Evidence', {
     timestamps: true
 });
 
-// Associations
-Report.hasMany(Evidence, { foreignKey: 'reportId', as: 'allEvidence' });
-Evidence.belongsTo(Report, { foreignKey: 'reportId', as: 'report' });
-User.hasMany(Evidence, { foreignKey: 'uploadedById', as: 'uploadedEvidence' });
-Evidence.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploader' });
-
 module.exports = Evidence;

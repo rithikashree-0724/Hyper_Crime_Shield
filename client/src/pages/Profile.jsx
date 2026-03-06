@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
+import Header from '../components/Header';
+import * as API_SERVICE from '../api';
 
 const Profile = () => {
     const { user, setUser } = useAuth();
@@ -38,14 +39,12 @@ const Profile = () => {
 
     const fetchProfile = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            setUserData(data);
-            setUser(data); // Sync global context
-            setFormData({ name: data.name || '', email: data.email || '', phone: data.phone || '' });
+            const { data } = await API_SERVICE.getProfile();
+            if (data.success) {
+                setUserData(data.data);
+                setUser(data.data); // Sync global context
+                setFormData({ name: data.data.name || '', email: data.data.email || '', phone: data.data.phone || '' });
+            }
         } catch (err) {
             showMessage('error', 'Failed to load profile');
         }
@@ -53,15 +52,10 @@ const Profile = () => {
 
     const fetchLoginHistory = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/login-history', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setLoginHistory(data);
+            const { data } = await API_SERVICE.getLoginHistory();
+            if (data.success && Array.isArray(data.data)) {
+                setLoginHistory(data.data);
             } else {
-                console.error('Login history format error', data);
                 setLoginHistory([]);
             }
         } catch (err) {
@@ -78,7 +72,6 @@ const Profile = () => {
     const handleUpdateProfile = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
             const data = new FormData();
             data.append('name', formData.name);
             data.append('email', formData.email);
@@ -87,25 +80,14 @@ const Profile = () => {
                 data.append('profileImage', profileImage);
             }
 
-            const res = await fetch('http://localhost:5001/api/profile', {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: data
-            });
-            const responseData = await res.json();
-            if (res.ok) {
-                setUserData(responseData.user);
-                setUser(responseData.user); // Update global state
-                setEditMode(false);
-                setProfileImage(null);
-                showMessage('success', 'Profile updated successfully!');
-            } else {
-                showMessage('error', responseData.message || 'Update failed');
-            }
+            const res = await API_SERVICE.updateProfile(data);
+            setUserData(res.data.user);
+            setUser(res.data.user); // Update global state
+            setEditMode(false);
+            setProfileImage(null);
+            showMessage('success', 'Profile updated successfully!');
         } catch (err) {
-            showMessage('error', 'Failed to update profile');
+            showMessage('error', err.response?.data?.message || 'Failed to update profile');
         }
         setLoading(false);
     };
@@ -122,27 +104,14 @@ const Profile = () => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/change-password', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    currentPassword: passwordData.currentPassword,
-                    newPassword: passwordData.newPassword
-                })
+            await API_SERVICE.updatePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
             });
-            const data = await res.json();
-            if (res.ok) {
-                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                showMessage('success', 'Password changed successfully!');
-            } else {
-                showMessage('error', data.message || 'Password change failed');
-            }
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            showMessage('success', 'Password changed successfully!');
         } catch (err) {
-            showMessage('error', 'Failed to change password');
+            showMessage('error', err.response?.data?.message || 'Failed to change password');
         }
         setLoading(false);
     };
@@ -150,21 +119,11 @@ const Profile = () => {
     const handleEnable2FA = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/2fa/setup', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                setShowVerify(true);
-                showMessage('success', 'Verification OTP sent to your email!');
-            } else {
-                const data = await res.json();
-                showMessage('error', data.message || 'Failed to send OTP');
-            }
+            await API_SERVICE.setup2FA();
+            setShowVerify(true);
+            showMessage('success', 'Verification OTP sent to your email!');
         } catch (err) {
-            showMessage('error', 'Failed to enable 2FA');
+            showMessage('error', err.response?.data?.message || 'Failed to enable 2FA');
         }
         setLoading(false);
     };
@@ -172,16 +131,9 @@ const Profile = () => {
     const handleDisable2FA = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/2fa/disable', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                setUserData({ ...userData, isTwoFactorEnabled: false });
-                showMessage('success', '2FA Disabled');
-            }
+            await API_SERVICE.disable2FA();
+            setUserData({ ...userData, isTwoFactorEnabled: false });
+            showMessage('success', '2FA Disabled');
         } catch (err) {
             showMessage('error', 'Failed to disable 2FA');
         }
@@ -196,27 +148,14 @@ const Profile = () => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/profile/2fa/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ code: twoFactorCode })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setUserData({ ...userData, isTwoFactorEnabled: true });
-                setUser({ ...user, isTwoFactorEnabled: true });
-                setShowVerify(false);
-                setTwoFactorCode('');
-                showMessage('success', '2FA enabled successfully!');
-            } else {
-                showMessage('error', data.message || 'Invalid verification code');
-            }
+            await API_SERVICE.verify2FA(twoFactorCode);
+            setUserData({ ...userData, isTwoFactorEnabled: true });
+            setUser({ ...user, isTwoFactorEnabled: true });
+            setShowVerify(false);
+            setTwoFactorCode('');
+            showMessage('success', '2FA enabled successfully!');
         } catch (err) {
-            showMessage('error', 'Verification failed');
+            showMessage('error', err.response?.data?.message || 'Verification failed');
         }
         setLoading(false);
     };
@@ -231,9 +170,9 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background-dark text-slate-100 font-body">
+        <div className="min-h-screen bg-background text-text-primary font-body">
             <Header />
-            <main className="max-w-6xl mx-auto px-6 py-12">
+            <main className="max-w-6xl mx-auto px-6 pt-[160px] pb-12">
                 {/* Header */}
                 <div className="mb-10">
                     <div className="flex items-center gap-2 mb-2">
@@ -256,19 +195,20 @@ const Profile = () => {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-8 border-b border-white/10">
+                <div className="flex gap-2 mb-8 border-b border-border">
                     {[
                         { id: 'profile', label: 'Profile Info', icon: 'person' },
                         { id: 'security', label: 'Security', icon: 'security' },
                         { id: 'password', label: 'Password', icon: 'key' },
-                        { id: 'history', label: 'Login History', icon: 'history' }
+                        { id: 'history', label: 'Login History', icon: 'history' },
+                        { id: 'privacy', label: 'Privacy', icon: 'lock' }
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-3 rounded-t-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === tab.id
-                                ? 'bg-white/10 text-white border-b-2 border-primary'
-                                : 'text-text-muted hover:text-white hover:bg-white/5'
+                                ? 'bg-primary/10 text-text-primary border-b-2 border-primary'
+                                : 'text-text-muted hover:text-text-primary hover:bg-primary/5'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-lg">{tab.icon}</span>
@@ -281,13 +221,13 @@ const Profile = () => {
                 <div className="grid gap-8">
                     {/* Profile Tab */}
                     {activeTab === 'profile' && (
-                        <div className="glass-card p-8 rounded-2xl border-white/5">
+                        <div className="glass-card p-8 rounded-2xl">
                             <div className="flex items-start justify-between mb-8">
                                 <div className="flex items-center gap-6">
                                     <div className="relative group">
-                                        <div className="size-24 rounded-full bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center bg-cover bg-center"
-                                            style={(imagePreview || userData.profileImage) ? { backgroundImage: `url(${imagePreview || userData.profileImage})` } : {}}>
-                                            {!(imagePreview || userData.profileImage) && (
+                                        <div className="size-24 rounded-full bg-primary/5 border-2 border-border overflow-hidden flex items-center justify-center bg-cover bg-center"
+                                            style={(imagePreview || userData.profileImage) ? { backgroundImage: `url(${imagePreview || userData.profileImage})` } : { backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email || userData.name})` }}>
+                                            {!(imagePreview || userData.profileImage || userData.email || userData.name) && (
                                                 <span className="material-symbols-outlined text-4xl text-text-muted">person</span>
                                             )}
                                         </div>
@@ -325,7 +265,7 @@ const Profile = () => {
                                     {editMode ? (
                                         <input
                                             type="text"
-                                            className="input-field"
+                                            className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         />
@@ -339,7 +279,7 @@ const Profile = () => {
                                     {editMode ? (
                                         <input
                                             type="email"
-                                            className="input-field"
+                                            className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                             value={formData.email || ''}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         />
@@ -358,7 +298,7 @@ const Profile = () => {
                                     {editMode ? (
                                         <input
                                             type="tel"
-                                            className="input-field"
+                                            className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                             value={formData.phone}
                                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             placeholder="+91 98765 43210"
@@ -392,7 +332,7 @@ const Profile = () => {
                                             setEditMode(false);
                                             setFormData({ name: userData.name, phone: userData.phone });
                                         }}
-                                        className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-sm font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
+                                        className="px-6 py-3 rounded-xl bg-primary/5 border border-border text-sm font-bold uppercase tracking-widest hover:bg-primary/10 transition-all"
                                     >
                                         Cancel
                                     </button>
@@ -403,17 +343,17 @@ const Profile = () => {
 
                     {/* Security Tab */}
                     {activeTab === 'security' && (
-                        <div className="glass-card p-8 rounded-2xl border-white/5">
+                        <div className="glass-card p-8 rounded-2xl">
                             <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">shield</span>
                                 Two-Factor Authentication
                             </h2>
                             <p className="text-sm text-text-secondary mb-8">Add an extra layer of security to your account</p>
 
-                            <div className="p-6 bg-white/5 rounded-xl border border-white/5 mb-6">
+                            <div className="p-6 bg-primary/5 rounded-xl border border-border mb-6">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-white mb-1">Email Authentication</h3>
+                                        <h3 className="font-bold mb-1">Email Authentication</h3>
                                         <p className="text-xs text-text-secondary">Receive a 6-digit code on your email for every login</p>
                                     </div>
                                     {userData.isTwoFactorEnabled ? (
@@ -450,7 +390,7 @@ const Profile = () => {
                                                 type="text"
                                                 maxLength="6"
                                                 placeholder="000000"
-                                                className="input-field text-center font-mono text-2xl tracking-[0.5em]"
+                                                className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-center font-mono text-2xl tracking-[0.5em]"
                                                 value={twoFactorCode}
                                                 onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
                                             />
@@ -470,7 +410,7 @@ const Profile = () => {
 
                     {/* Password Tab */}
                     {activeTab === 'password' && (
-                        <div className="glass-card p-8 rounded-2xl border-white/5">
+                        <div className="glass-card p-8 rounded-2xl">
                             <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">password</span>
                                 Change Password
@@ -482,7 +422,7 @@ const Profile = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-text-muted mb-2 block">Current Password</label>
                                     <input
                                         type="password"
-                                        className="input-field"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                         value={passwordData.currentPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                                         placeholder="Enter current password"
@@ -493,7 +433,7 @@ const Profile = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-text-muted mb-2 block">New Password</label>
                                     <input
                                         type="password"
-                                        className="input-field"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                         value={passwordData.newPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                                         placeholder="Enter new password (min. 6 characters)"
@@ -504,7 +444,7 @@ const Profile = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-text-muted mb-2 block">Confirm New Password</label>
                                     <input
                                         type="password"
-                                        className="input-field"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                         value={passwordData.confirmPassword}
                                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                                         placeholder="Confirm new password"
@@ -525,7 +465,7 @@ const Profile = () => {
 
                     {/* Login History Tab */}
                     {activeTab === 'history' && (
-                        <div className="glass-card p-8 rounded-2xl border-white/5">
+                        <div className="glass-card p-8 rounded-2xl">
                             <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">history</span>
                                 Recent Login Activity
@@ -539,29 +479,107 @@ const Profile = () => {
                                         <p className="mt-4 text-text-muted">No login history available</p>
                                     </div>
                                 ) : (
-                                    loginHistory.slice(0, 10).map((login, i) => (
-                                        <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/[0.07] transition-all">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex gap-3">
-                                                    <div className="size-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                                                        <span className="material-symbols-outlined text-blue-500">login</span>
+                                    [...loginHistory]
+                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                        .slice(0, 10)
+                                        .map((login, i) => (
+                                            <div key={i} className="p-4 bg-primary/5 rounded-xl border border-border hover:bg-primary/10 transition-all">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex gap-3">
+                                                        <div className="size-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-blue-500">login</span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm">{login.ip || 'Unknown IP'}</p>
+                                                            <p className="text-xs text-text-secondary mt-1">
+                                                                {new Date(login.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-bold text-sm">{login.ip || 'Unknown IP'}</p>
-                                                        <p className="text-xs text-text-secondary mt-1">
-                                                            {new Date(login.timestamp).toLocaleString()}
-                                                        </p>
-                                                    </div>
+                                                    {i === 0 && (
+                                                        <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded-md text-[10px] font-bold uppercase tracking-wider">
+                                                            Latest Activity
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                {i === 0 && (
-                                                    <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded-md text-[10px] font-bold uppercase tracking-wider">
-                                                        Current Session
-                                                    </span>
-                                                )}
                                             </div>
-                                        </div>
-                                    ))
+                                        ))
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Privacy Tab */}
+                    {activeTab === 'privacy' && (
+                        <div className="glass-card p-8 rounded-2xl animate-fade-in">
+                            <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">gavel</span>
+                                Privacy & Data Protection
+                            </h2>
+                            <p className="text-sm text-text-secondary mb-8">Manage your digital footprint and compliance rights</p>
+
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="p-6 bg-primary/5 rounded-xl border border-border">
+                                    <h3 className="font-bold mb-2 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">download</span>
+                                        Export My Data
+                                    </h3>
+                                    <p className="text-xs text-text-secondary mb-6">Download all your personal information, reports, and activity logs in your preferred format.</p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={async () => {
+                                                const res = await API_SERVICE.exportData('pdf');
+                                                const url = window.URL.createObjectURL(new Blob([res.data]));
+                                                const link = document.createElement('a');
+                                                link.href = url;
+                                                link.setAttribute('download', 'my_data.pdf');
+                                                document.body.appendChild(link);
+                                                link.click();
+                                            }}
+                                            className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all"
+                                        >
+                                            PDF Format
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                const res = await API_SERVICE.exportData('excel');
+                                                const url = window.URL.createObjectURL(new Blob([res.data]));
+                                                const link = document.createElement('a');
+                                                link.href = url;
+                                                link.setAttribute('download', 'my_data.xlsx');
+                                                document.body.appendChild(link);
+                                                link.click();
+                                            }}
+                                            className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all"
+                                        >
+                                            Excel Format
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-red-500/5 rounded-xl border border-red-500/10">
+                                    <h3 className="font-bold mb-2 text-red-500 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">delete_forever</span>
+                                        Danger Zone
+                                    </h3>
+                                    <p className="text-xs text-text-secondary mb-6 italic">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                                    <button
+                                        onClick={async () => {
+                                            if (window.confirm('CRITICAL: Are you sure you want to permanently delete your account? This will remove all your reports and activity logs.')) {
+                                                try {
+                                                    await API_SERVICE.deleteAccount();
+                                                    alert('Account deleted. Redirecting...');
+                                                    window.location.href = '/';
+                                                } catch (err) {
+                                                    alert('Deletion failed.');
+                                                }
+                                            }
+                                        }}
+                                        className="w-full py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/10"
+                                    >
+                                        Delete My Account
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

@@ -13,20 +13,13 @@ export default {
                     light: "#3a96ff",
                     dark: "#0b5db5",
                 },
-                "background": {
-                    light: "#f6f7f8",
-                    dark: "#0a0f14",
-                },
-                "surface": {
-                    light: "#ffffff",
-                    dark: "#141b22",
-                    accent: "#1c232b",
-                },
+                "background": "var(--background)",
+                "surface": "var(--surface)",
                 "accent": {
-                    cyan: "#00f5ff",
-                    blue: "#3b82f6",
-                    violet: "#a855f7",
-                    emerald: "#10b981",
+                    cyan: "var(--accent-cyan)",
+                    blue: "var(--accent-blue)",
+                    violet: "var(--accent-violet)",
+                    emerald: "var(--accent-emerald)",
                     red: "#ef4444",
                     electric: "#7e22ce"
                 },
@@ -36,14 +29,15 @@ export default {
                     neon: "#00f5ff"
                 },
                 "text": {
-                    primary: "#f8fafc",
-                    secondary: "#94a3b8",
-                    muted: "#64748b",
-                }
+                    primary: "var(--text-primary)",
+                    secondary: "var(--text-secondary)",
+                    muted: "var(--text-muted)",
+                },
+                "border": "var(--border)",
             },
             fontFamily: {
-                "display": ["Outfit", "Inter", "sans-serif"],
-                "body": ["Inter", "sans-serif"],
+                "display": ["Outfit", "sans-serif"],
+                "body": ["'Plus Jakarta Sans'", "sans-serif"],
             },
             animation: {
                 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',

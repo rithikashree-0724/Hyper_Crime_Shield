@@ -1,0 +1,5 @@
+[dotenv@17.2.3] injecting env (7) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[INFO] Server running on port 5001
+Server is running on http://localhost:5001
+[EMAIL SUCCESS] Server is ready to take our messages

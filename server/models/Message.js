@@ -38,11 +38,4 @@ const Message = sequelize.define('Message', {
     timestamps: true
 });
 
-// Associations
-Report.hasMany(Message, { foreignKey: 'reportId', as: 'messages' });
-Message.belongsTo(Report, { foreignKey: 'reportId', as: 'report' });
-
-User.hasMany(Message, { foreignKey: 'senderId', as: 'sentMessages' });
-Message.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
-
 module.exports = Message;

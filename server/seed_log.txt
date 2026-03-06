@@ -1,0 +1,13 @@
+--- STARTING SEED ---
+[2026-03-05T16:54:21.559Z] Connected to SQLite for seeding
+[2026-03-05T16:54:21.872Z] Database Tables Force-Synced (all data cleared)
+[2026-03-05T16:54:22.008Z] Admin account created: admin@hypershield.net / adminpassword
+[2026-03-05T16:54:22.105Z] Investigator created: financial@hypershield.net / password123
+[2026-03-05T16:54:22.211Z] Investigator created: identity@hypershield.net / password123
+[2026-03-05T16:54:22.308Z] Investigator created: bullying@hypershield.net / password123
+[2026-03-05T16:54:22.405Z] Investigator created: phishing@hypershield.net / password123
+[2026-03-05T16:54:22.516Z] Investigator created: malware@hypershield.net / password123
+[2026-03-05T16:54:22.639Z] Investigator created: databreach@hypershield.net / password123
+[2026-03-05T16:54:22.751Z] Citizen created: aravind@gmail.com / password123
+[2026-03-05T16:54:22.764Z] Sample reports created
+[2026-03-05T16:54:22.766Z] --- SEEDING COMPLETE ---

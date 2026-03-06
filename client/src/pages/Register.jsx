@@ -33,17 +33,15 @@ const Register = () => {
 
         const res = await register(formData);
         if (res.success) {
-            setSuccess('Account created successfully! Redirecting to dashboard in 5 seconds...');
-            setTimeout(() => {
-                navigate('/dashboard');
-            }, 5000);
+            setSuccess('Registration successful! You can now login immediately without email verification.');
+            setFormData({ name: '', email: '', password: '', confirmPassword: '', phone: '', role: 'citizen' });
         } else {
             setError(res.message);
         }
     };
 
     return (
-        <div className="min-h-screen bg-background-dark text-slate-100 flex flex-col font-body selection:bg-primary/20 relative overflow-hidden">
+        <div className="min-h-screen bg-background text-text-primary flex flex-col font-body selection:bg-primary/20 relative overflow-hidden">
             <div className="absolute top-[20%] left-1/2 -translate-x-1/2 size-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
             <header className="px-6 py-8 flex justify-center">
@@ -53,15 +51,35 @@ const Register = () => {
             </header>
 
             <main className="flex-1 flex items-center justify-center p-6 pb-20">
-                <div className="w-full max-w-[500px] glass-card p-8 rounded-3xl border-white/5 animate-fade-in shadow-2xl relative overflow-hidden">
+                <div className="w-full max-w-[500px] glass-card p-8 rounded-3xl border-border animate-fade-in shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
 
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-extrabold tracking-tight text-white mb-2">New User Registration</h2>
+                        <h2 className="text-2xl font-extrabold tracking-tight mb-2">New User Registration</h2>
                         <p className="text-text-secondary text-xs">Create your account to get started.</p>
                     </div>
 
-                    {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 text-center">{error}</div>}
+                    {error && (
+                        <div className="mb-4 flex flex-col gap-2">
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg text-center">{error}</div>
+                            {error.toLowerCase().includes('network') && (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('http://localhost:5001/api/health');
+                                            if (res.ok) alert('Server is UP! Please check your local connection or proxy.');
+                                            else alert('Server is reachable but returned an error. Check server logs.');
+                                        } catch (e) {
+                                            alert('Server is UNREACHABLE. Please ensure the backend is running on port 5001.');
+                                        }
+                                    }}
+                                    className="text-[9px] font-bold text-primary uppercase tracking-widest hover:underline text-center bg-primary/5 py-2 rounded-lg border border-primary/10 transition-colors"
+                                >
+                                    Troubleshoot Connection
+                                </button>
+                            )}
+                        </div>
+                    )}
                     {success && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs p-3 rounded-lg mb-4 text-center animate-pulse">{success}</div>}
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -71,7 +89,7 @@ const Register = () => {
                                 <input
                                     type="text"
                                     name="name"
-                                    className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                     placeholder="John Doe"
                                     value={formData.name}
                                     onChange={handleChange}
@@ -83,10 +101,11 @@ const Register = () => {
                                 <input
                                     type="text"
                                     name="phone"
-                                    className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                     placeholder="+91 98765 43210"
                                     value={formData.phone}
                                     onChange={handleChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -96,7 +115,7 @@ const Register = () => {
                             <input
                                 type="email"
                                 name="email"
-                                className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                                className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                 placeholder="user@example.com"
                                 value={formData.email}
                                 onChange={handleChange}
@@ -110,7 +129,7 @@ const Register = () => {
                                 <input
                                     type="password"
                                     name="password"
-                                    className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -122,7 +141,7 @@ const Register = () => {
                                 <input
                                     type="password"
                                     name="confirmPassword"
-                                    className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
                                     placeholder="••••••••"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
@@ -131,41 +150,18 @@ const Register = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Account Role</label>
-                            <select
-                                name="role"
-                                className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="citizen">Citizen</option>
-                                <option value="investigator">Investigator</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        {(formData.role === 'investigator' || formData.role === 'admin') && (
-                            <div className="flex flex-col gap-1 animate-fade-in">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted ml-1">Badge ID</label>
-                                <input
-                                    type="text"
-                                    name="badgeId"
-                                    className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
-                                    placeholder="BADGE-12345"
-                                    value={formData.badgeId}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        )}
-
                         <button
                             type="submit"
-                            className="btn-primary w-full h-12 text-sm font-bold uppercase tracking-widest shadow-lg mt-2"
+                            className="btn-primary w-full h-14 text-sm font-bold uppercase tracking-widest shadow-xl mt-4"
                         >
-                            Create Account
+                            Create Citizen Account
                         </button>
+
+                        <div className="p-4 bg-accent-violet/5 rounded-2xl border border-accent-violet/10 text-center mt-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-violet/80">Authority Accounts</p>
+                            <p className="text-[11px] text-text-secondary mt-1">Admin or Investigator? Contact System Administrator for authorized credentials.</p>
+                        </div>
+
 
                         <div className="flex items-center justify-center mt-4">
                             <Link to="/login" className="text-xs text-text-muted hover:text-primary transition-colors">

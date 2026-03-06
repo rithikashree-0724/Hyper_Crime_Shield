@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import * as API_SERVICE from '../api';
 
 const ReportCrime = () => {
     const [formData, setFormData] = useState({
@@ -23,7 +24,6 @@ const ReportCrime = () => {
         setSubmitting(true);
 
         try {
-            const token = localStorage.getItem('token');
             const data = new FormData();
             Object.keys(formData).forEach(key => {
                 data.append(key, formData[key]);
@@ -31,41 +31,27 @@ const ReportCrime = () => {
             // Handle file uploads
             if (files) Array.from(files).forEach(file => data.append('evidence', file));
 
-            const res = await fetch('http://localhost:5001/api/reports', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // Content-Type not set for FormData, browser sets it with boundary
-                },
-                body: data
-            });
-
-            if (res.ok) {
-                alert('Report successfully submitted.');
-                navigate('/dashboard');
-            } else {
-                const data = await res.json();
-                console.error("API Error", data.message);
-                alert('Submission Error: ' + data.message);
-            }
+            await API_SERVICE.createReport(data);
+            alert('Report successfully submitted.');
+            navigate('/dashboard');
         } catch (err) {
-            console.error('Network Error', err);
-            alert('Connection lost. Please check your internet.');
+            console.error('API Error', err);
+            alert('Submission Error: ' + (err.response?.data?.message || 'Connection lost.'));
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-background-dark text-slate-100 font-body pb-24">
+        <div className="min-h-screen bg-background text-text-primary font-body pb-24">
             <Header />
 
-            <main className="max-w-3xl mx-auto px-6 pt-16 animate-fade-in">
+            <main className="max-w-3xl mx-auto px-6 pt-[160px] animate-fade-in">
                 <div className="flex flex-col gap-10">
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-2">
                             <div className="h-px w-10 bg-primary/40"></div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#22d3ee]">Secure Reporting Form</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Secure Reporting Form</span>
                         </div>
                         <h2 className="text-4xl font-extrabold tracking-tight">Report a Crime</h2>
                         <p className="text-text-secondary font-medium mt-1">Please provide details about the incident so we can help.</p>
@@ -78,7 +64,7 @@ const ReportCrime = () => {
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
-                                className="bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted"
+                                className="bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted"
                                 placeholder="e.g., Online Banking Fraud"
                                 required
                             />
@@ -92,13 +78,16 @@ const ReportCrime = () => {
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
-                                        className="w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold appearance-none focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all cursor-pointer"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold appearance-none focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all cursor-pointer"
                                     >
-                                        <option value="Information Security Breach">Information Security Breach</option>
-                                        <option value="Malicious Code Execution">Malicious Code Execution</option>
-                                        <option value="Advanced Phishing / Smishing">Advanced Phishing / Smishing</option>
-                                        <option value="Data Exfiltration Event">Data Exfiltration Event</option>
-                                        <option value="Infrastructure Denial (DoS)">Infrastructure Denial (DoS)</option>
+                                        <option value="Financial Fraud">Financial Fraud</option>
+                                        <option value="Identity Theft">Identity Theft</option>
+                                        <option value="Cyber Bullying">Cyber Bullying</option>
+                                        <option value="Phishing Attack">Phishing Attack</option>
+                                        <option value="Malware / Virus">Malware / Virus</option>
+                                        <option value="Data Breach">Data Breach</option>
+                                        <option value="Social Media Crime">Social Media Crime</option>
+                                        <option value="Other Cyber Crime">Other Cyber Crime</option>
                                     </select>
                                     <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">expand_more</span>
                                 </div>
@@ -110,7 +99,7 @@ const ReportCrime = () => {
                                         name="severity"
                                         value={formData.severity}
                                         onChange={handleChange}
-                                        className="w-full bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold appearance-none focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all cursor-pointer"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold appearance-none focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all cursor-pointer"
                                     >
                                         <option value="low">Low - Minor Issue</option>
                                         <option value="medium">Medium - Important</option>
@@ -129,7 +118,7 @@ const ReportCrime = () => {
                                 value={formData.description}
                                 onChange={handleChange}
                                 rows="6"
-                                className="bg-surface-dark border border-white/10 rounded-2xl px-5 py-5 text-white font-medium focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted resize-none leading-relaxed"
+                                className="bg-primary/5 border border-border rounded-2xl px-5 py-5 text-text-primary font-medium focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted resize-none leading-relaxed"
                                 placeholder="Describe exactly what happened. Include any relevant details..."
                                 required
                             />
@@ -143,7 +132,7 @@ const ReportCrime = () => {
                                         type="datetime-local"
                                         name="incidentDate"
                                         onChange={handleChange}
-                                        className="bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted text-sm"
+                                        className="bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted text-sm"
                                     />
                                 </div>
                                 <div className="flex flex-col gap-3">
@@ -151,7 +140,7 @@ const ReportCrime = () => {
                                     <input
                                         name="suspects"
                                         onChange={handleChange}
-                                        className="bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted"
+                                        className="bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-text-muted"
                                         placeholder="Names or descriptions..."
                                     />
                                 </div>
@@ -163,9 +152,9 @@ const ReportCrime = () => {
                                         type="checkbox"
                                         name="isAnonymous"
                                         onChange={(e) => setFormData({ ...formData, isAnonymous: e.target.checked })}
-                                        className="w-5 h-5 rounded border-white/10 bg-surface-dark text-primary focus:ring-primary/40"
+                                        className="w-5 h-5 rounded border-border bg-primary/5 text-primary focus:ring-primary/40"
                                     />
-                                    <span className="text-xs font-bold uppercase tracking-widest text-text-muted group-hover:text-white transition-colors">Submit Anonymously</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest text-text-muted group-hover:text-text-primary transition-colors">Submit Anonymously</span>
                                 </label>
                             </div>
 
@@ -176,14 +165,14 @@ const ReportCrime = () => {
                                     multiple
                                     name="evidence"
                                     onChange={(e) => setFiles(e.target.files)}
-                                    className="bg-surface-dark border border-white/10 rounded-xl px-5 py-4 text-white font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                    className="bg-primary/5 border border-border rounded-xl px-5 py-4 text-text-primary font-bold focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className={`w-full h-16 rounded-xl font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${submitting ? 'bg-surface-accent text-text-muted' : 'bg-primary hover:bg-primary-light text-white shadow-xl shadow-primary/20 hover:scale-[1.01]'}`}
+                                className={`w-full h-16 rounded-xl font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${submitting ? 'bg-primary/50 text-text-muted' : 'bg-primary hover:bg-primary-light text-white shadow-xl shadow-primary/20 hover:scale-[1.01]'}`}
                             >
                                 {submitting ? 'Submitting...' : <>
                                     Submit Report

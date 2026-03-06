@@ -40,13 +40,18 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    department: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'Cyber Crime Division'
+    },
     isVerified: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
     },
     kycStatus: {
         type: DataTypes.ENUM('pending', 'verified', 'rejected'),
-        defaultValue: 'pending'
+        defaultValue: 'verified'
     },
     isTwoFactorEnabled: {
         type: DataTypes.BOOLEAN,
@@ -61,21 +66,45 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         allowNull: true
     },
+    verificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     loginHistory: {
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: []
+    },
+    refreshToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    loginAttempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    lockoutUntil: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     timestamps: true,
+    paranoid: true, // Enable soft deletes
+    indexes: [
+        { unique: true, fields: ['email'] },
+        { fields: ['role'] },
+        { fields: ['kycStatus'] }
+    ],
     hooks: {
         beforeCreate: async (user) => {
+            if (user.email) user.email = user.email.trim().toLowerCase();
             if (user.password) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
         },
         beforeUpdate: async (user) => {
+            if (user.email) user.email = user.email.trim().toLowerCase();
             if (user.changed('password')) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);

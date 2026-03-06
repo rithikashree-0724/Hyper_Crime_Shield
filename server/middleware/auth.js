@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Sequelize model
+const User = require('../models/User');
 
 module.exports = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
 
-        // Check for mock
+        // Check for mock data bypass
         if (decoded.id && decoded.id.toString().startsWith('mock_')) {
             req.user = decoded;
             return next();
@@ -26,16 +26,23 @@ module.exports = async (req, res, next) => {
             req.user = { id: 'mockuser', role: 'citizen' };
             return next();
         }
-        res.status(401).json({ message: 'Token is not valid' });
+
+        let message = 'Token is not valid';
+        if (err.name === 'TokenExpiredError') message = 'Token has expired';
+        res.status(401).json({ message });
     }
 };
 
+// Role Authorization Middleware
 module.exports.authorize = (...roles) => {
     return (req, res, next) => {
-        if (process.env.USE_MOCK_DATA === 'true') return next(); // Bypass for mock
+        if (process.env.USE_MOCK_DATA === 'true') return next();
 
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
         if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ message: `User role ${req.user.role} is not authorized to access this route` });
+            return res.status(403).json({ message: `Role ${req.user.role} is not authorized to access this route` });
         }
         next();
     };

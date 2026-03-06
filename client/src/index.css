@@ -1,41 +1,125 @@
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #f8faff;
+  --background-alt: #f1f5f9;
+  --surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border: rgba(15, 23, 42, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(15, 23, 42, 0.05);
+  --primary: #137fec;
+
+  /* Theme-aware accents optimized for Light Mode */
+  --accent-cyan: #06b6d4;
+  --accent-violet: #8b5cf6;
+  --accent-emerald: #10b981;
+  --accent-blue: #2563eb;
+}
+
+[data-theme='dark'] {
+  --background: #1e1e20;
+  --background-alt: #252528;
+  --surface: #2d2d30;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: rgba(255, 255, 255, 0.05);
+  --glass-bg: rgba(45, 45, 48, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+
+  /* Midnight Stealth Accents */
+  --accent-cyan: #818cf8;
+  /* Indigo */
+  --accent-violet: #d946ef;
+  /* Fuchsia */
+  --accent-emerald: #38bdf8;
+  /* Sky */
+  --accent-blue: #6366f1;
+  /* Deep Indigo */
+}
+
+@layer utilities {
+  .reveal {
+    @apply opacity-0 translate-y-8 transition-all duration-1000 ease-out;
+  }
+
+  .reveal.active {
+    @apply opacity-100 translate-y-0;
+  }
+
+  .stagger-1 {
+    transition-delay: 100ms;
+  }
+
+  .stagger-2 {
+    transition-delay: 200ms;
+  }
+
+  .stagger-3 {
+    transition-delay: 300ms;
+  }
+}
+
 @layer base {
   body {
-    @apply antialiased text-slate-100 font-body;
-    background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
-    background-attachment: fixed;
+    @apply antialiased font-body transition-colors duration-300;
+    color: var(--text-primary);
+    background: var(--background);
     min-height: 100vh;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-surface-dark/40 backdrop-blur-md border border-white/5 shadow-xl;
+    @apply backdrop-blur-md transition-all duration-300;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
   }
 
   .glass-header {
-    @apply bg-background-dark/80 backdrop-blur-md border-b border-white/5;
+    @apply backdrop-blur-md border-b transition-all duration-300;
+    background: var(--glass-bg);
+    border-color: var(--border);
   }
 
   .btn-primary {
-    @apply flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-light transition-all active:scale-95;
+    @apply flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 font-bold text-white shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95;
   }
 
   .btn-secondary {
-    @apply flex items-center justify-center gap-2 rounded-lg bg-white/5 px-6 py-2.5 font-bold text-white border border-white/10 hover:bg-white/10 transition-all active:scale-95;
+    @apply flex items-center justify-center gap-2 rounded-lg px-6 py-2.5 font-bold transition-all active:scale-95 border;
+    background: var(--glass-bg);
+    border-color: var(--border);
+    color: var(--text-primary);
   }
 
   .nav-link {
-    @apply flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-text-secondary hover:text-white hover:bg-white/5 transition-all;
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all;
+    color: var(--text-secondary);
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    @apply bg-primary/10 text-primary;
   }
 
   .input-field {
-    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-text-muted focus:ring-1 focus:ring-primary focus:border-primary/50 outline-none transition-all;
+    @apply w-full border rounded-xl px-4 py-3 outline-none transition-all font-medium;
+    background: var(--glass-bg);
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+
+  .input-field:focus {
+    @apply ring-1 ring-primary border-primary/50;
   }
 }
 
@@ -48,7 +132,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  @apply bg-primary/10 rounded-full hover:bg-primary/20 transition-colors;
 }
 
 * {

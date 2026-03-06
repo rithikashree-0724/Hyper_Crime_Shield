@@ -26,6 +26,14 @@ const Investigation = sequelize.define('Investigation', {
         type: DataTypes.JSON, // Array of User IDs
         defaultValue: []
     },
+    primaryInvestigatorId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
     notes: {
         type: DataTypes.JSON, // Array of { content, authorId, date }
         defaultValue: []
@@ -40,11 +48,10 @@ const Investigation = sequelize.define('Investigation', {
     }
 }, {
     tableName: 'investigations',
-    timestamps: true
+    timestamps: true,
+    indexes: [
+        { fields: ['status'] }
+    ]
 });
-
-// Associations
-Report.hasOne(Investigation, { foreignKey: 'reportId', as: 'investigation' });
-Investigation.belongsTo(Report, { foreignKey: 'reportId', as: 'report' });
 
 module.exports = Investigation;

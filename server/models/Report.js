@@ -38,7 +38,7 @@ const Report = sequelize.define('Report', {
         defaultValue: 'medium'
     },
     status: {
-        type: DataTypes.ENUM('pending', 'investigating', 'resolved', 'closed', 'escalated'),
+        type: DataTypes.ENUM('pending', 'review', 'approved', 'investigating', 'resolved', 'closed', 'escalated'),
         defaultValue: 'pending'
     },
     location: {
@@ -63,11 +63,13 @@ const Report = sequelize.define('Report', {
     }
 }, {
     tableName: 'reports',
-    timestamps: true
+    timestamps: true,
+    paranoid: true, // Enable soft deletes
+    indexes: [
+        { fields: ['complaintId'] },
+        { fields: ['status'] },
+        { fields: ['category'] }
+    ]
 });
-
-// Associations
-User.hasMany(Report, { foreignKey: 'userId', as: 'reports' });
-Report.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 module.exports = Report;
