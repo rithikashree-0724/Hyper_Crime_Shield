@@ -87,7 +87,8 @@ const Login = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch('http://localhost:5001/api/health');
+                                            const API_ROOT = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+                                            const res = await fetch(`${API_ROOT}/health`);
                                             if (res.ok) alert('Server is UP! Please check your local connection or proxy.');
                                             else alert('Server is reachable but returned an error. Check server logs.');
                                         } catch (e) {

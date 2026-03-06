@@ -1,5 +1,5 @@
 const { sequelize } = require('./config/db');
-const User = require('./models/User');
+const { User, Report, Investigation, Evidence, Message, AuditLog, Notification, CaseHistory } = require('./models');
 
 async function syncDB() {
     try {

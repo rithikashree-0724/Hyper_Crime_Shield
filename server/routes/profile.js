@@ -38,7 +38,7 @@ router.put('/', auth, upload.single('profileImage'), async (req, res, next) => {
 
         // Handle File Upload
         if (req.file) {
-            user.profileImage = `http://localhost:5001/${req.file.path.replace(/\\/g, '/')}`; // Convert path to URL
+            user.profileImage = req.file.path.replace(/\\/g, '/'); // Store relative path
         }
 
         await user.save();

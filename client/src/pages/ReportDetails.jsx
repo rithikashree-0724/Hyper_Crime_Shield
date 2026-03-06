@@ -108,7 +108,8 @@ const ReportDetails = () => {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {report.evidence.map((file, i) => {
                                             const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
-                                            const fileUrl = file.startsWith('http') ? file : `http://localhost:5001/${file.replace(/\\/g, '/')}`;
+                                            const UPLOAD_ROOT = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
+                                            const fileUrl = file.startsWith('http') ? file : `${UPLOAD_ROOT}/${file.replace(/\\/g, '/')}`;
                                             return (
                                                 <div key={i} onClick={() => window.open(fileUrl, '_blank')} className="aspect-square bg-primary/5 rounded-xl border border-border flex items-center justify-center group overflow-hidden relative cursor-pointer">
                                                     {isImage ? (

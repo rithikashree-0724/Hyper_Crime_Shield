@@ -50,7 +50,7 @@ const Dashboard = () => {
         { label: 'Report New Crime', icon: 'add_circle', link: '/report-crime', color: 'bg-red-500' },
         { label: 'View All Reports', icon: 'article', link: '#reports', action: true, color: 'bg-blue-500' },
         { label: 'Safety Resources', icon: 'shield', link: '/resources', color: 'bg-green-500' },
-        { label: 'Contact Support', icon: 'support_agent', link: '/support', color: 'bg-purple-500' }
+        { label: 'Shield Alerts', icon: 'shield_with_heart', link: '/alerts', color: 'bg-purple-500' }
     ];
 
     const handleQuickAction = (e, action) => {

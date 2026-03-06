@@ -33,7 +33,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:5174"],
+        origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ["http://localhost:5173", "http://localhost:5174"],
         methods: ["GET", "POST"]
     }
 });
@@ -42,11 +42,12 @@ const io = new Server(server, {
 app.use(express.json());
 // app.use(cookieParser());
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ["http://localhost:5173", "http://localhost:5174"],
     credentials: true
 }));
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false // Disable CSP for easier deployment of assets
 }));
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
@@ -135,9 +136,9 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5001;
 if (process.env.NODE_ENV !== 'test') {
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
         logger.info(`Server running on port ${PORT}`);
-        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`Server is running on port ${PORT}`);
     });
 }
 
@@ -145,6 +146,9 @@ module.exports = app;
 
 const { sequelize, connectDB } = require('./config/db');
 const { User } = require('./models');
+
+// Initialize Database
+connectDB();
 
 /*
 // Sync Database and Auto-Seed

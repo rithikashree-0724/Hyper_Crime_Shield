@@ -83,7 +83,13 @@ const Header = () => {
                             <Link to="/profile">
                                 <div
                                     className="size-12 rounded-2xl bg-surface-accent border-2 border-primary/20 bg-cover bg-center transition-transform hover:scale-110"
-                                    style={{ backgroundImage: `url(${user.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || user.name}`})` }}
+                                    style={{
+                                        backgroundImage: `url(${(() => {
+                                            if (!user.profileImage) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
+                                            const UPLOAD_ROOT = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
+                                            return user.profileImage.startsWith('http') ? user.profileImage : `${UPLOAD_ROOT}/${user.profileImage.replace(/\\/g, '/')}`;
+                                        })()})`
+                                    }}
                                 />
                             </Link>
                             <button onClick={logout} className="text-[12px] font-black uppercase tracking-widest text-red-500 hover:opacity-80 transition-opacity">

@@ -81,8 +81,9 @@ const Profile = () => {
             }
 
             const res = await API_SERVICE.updateProfile(data);
-            setUserData(res.data.user);
-            setUser(res.data.user); // Update global state
+            const updatedUser = res.data.data || res.data.user;
+            setUserData(updatedUser);
+            setUser(updatedUser); // Update global state
             setEditMode(false);
             setProfileImage(null);
             showMessage('success', 'Profile updated successfully!');
@@ -226,10 +227,15 @@ const Profile = () => {
                                 <div className="flex items-center gap-6">
                                     <div className="relative group">
                                         <div className="size-24 rounded-full bg-primary/5 border-2 border-border overflow-hidden flex items-center justify-center bg-cover bg-center"
-                                            style={(imagePreview || userData.profileImage) ? { backgroundImage: `url(${imagePreview || userData.profileImage})` } : { backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email || userData.name})` }}>
-                                            {!(imagePreview || userData.profileImage || userData.email || userData.name) && (
-                                                <span className="material-symbols-outlined text-4xl text-text-muted">person</span>
-                                            )}
+                                            style={(() => {
+                                                if (imagePreview) return { backgroundImage: `url(${imagePreview})` };
+                                                if (userData.profileImage) {
+                                                    const UPLOAD_ROOT = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
+                                                    const url = userData.profileImage.startsWith('http') ? userData.profileImage : `${UPLOAD_ROOT}/${userData.profileImage.replace(/\\/g, '/')}`;
+                                                    return { backgroundImage: `url(${url})` };
+                                                }
+                                                return { backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userData.email || userData.name)})` };
+                                            })()}>
                                         </div>
                                         {editMode && (
                                             <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">

@@ -9,7 +9,8 @@ export const RealTimeProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5001');
+        const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
+        const newSocket = io(SOCKET_URL);
         setSocket(newSocket);
 
         return () => newSocket.close();

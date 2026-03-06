@@ -146,12 +146,12 @@ const InvestigatorDashboard = () => {
                         <p className="text-xs text-text-secondary">Access investigation guides and best practices</p>
                     </Link>
 
-                    <Link to="/support" className="glass-card p-6 rounded-2xl group">
+                    <Link to="/alerts" className="glass-card p-6 rounded-2xl group">
                         <div className="size-12 rounded-xl bg-blue-500/20 border border-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <span className="material-symbols-outlined text-2xl text-blue-500">support_agent</span>
+                            <span className="material-symbols-outlined text-2xl text-blue-500">notification_important</span>
                         </div>
-                        <h3 className="text-sm font-bold mb-2">Technical Support</h3>
-                        <p className="text-xs text-text-secondary">Get help with investigation tools and systems</p>
+                        <h3 className="text-sm font-bold mb-2">Shield Alerts</h3>
+                        <p className="text-xs text-text-secondary">Monitor real-time cyber threats and advisories</p>
                     </Link>
 
                     <Link to="/profile" className="glass-card p-6 rounded-2xl group">

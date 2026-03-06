@@ -102,6 +102,11 @@ const User = sequelize.define('User', {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
+            // Assign unique default avatar if none provided
+            if (!user.profileImage) {
+                const seed = user.email || Math.random().toString();
+                user.profileImage = `https://i.pravatar.cc/150?u=${encodeURIComponent(seed)}`;
+            }
         },
         beforeUpdate: async (user) => {
             if (user.email) user.email = user.email.trim().toLowerCase();

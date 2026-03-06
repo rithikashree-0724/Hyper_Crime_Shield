@@ -57,6 +57,7 @@ exports.createReport = async (req, res, next) => {
             reportId: report.id,
             status: 'active',
             investigatorIds: targetInvestigatorId ? [targetInvestigatorId] : [],
+            primaryInvestigatorId: targetInvestigatorId
         });
 
         // 4. Audit Log
