@@ -102,10 +102,9 @@ const User = sequelize.define('User', {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
-            // Assign unique default avatar if none provided
+            // Assign unique professional stylized avatar if none provided
             if (!user.profileImage) {
-                const seed = user.email || Math.random().toString();
-                user.profileImage = `https://i.pravatar.cc/150?u=${encodeURIComponent(seed)}`;
+                user.profileImage = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
             }
         },
         beforeUpdate: async (user) => {

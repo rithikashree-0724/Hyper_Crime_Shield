@@ -36,6 +36,9 @@ export const addInvestigationTask = (id, taskData) => API.post(`/investigations/
 export const toggleTaskCompletion = (id, index) => API.patch(`/investigations/${id}/task/${index}`);
 export const setFinalOutcome = (id, outcome) => API.post(`/investigations/${id}/outcome`, { outcome });
 export const assignInvestigator = (reportId, investigatorId) => API.post(`/investigations/${reportId}/assign`, { investigatorId });
+export const updateInvestigationStep = (id, stepData) => API.patch(`/investigations/${id}/step`, stepData);
+export const resolveInvestigation = (id, resolveData) => API.post(`/investigations/${id}/resolve`, resolveData);
+export const getInvestigationByReport = (reportId) => API.get(`/investigations/by-report/${reportId}`);
 
 export { API };
 

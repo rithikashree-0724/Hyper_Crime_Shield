@@ -38,7 +38,10 @@ exports.createReport = async (req, res, next) => {
             'Cyber Bullying': 'bullying@hypershield.net',
             'Phishing Attack': 'phishing@hypershield.net',
             'Malware & Virus': 'malware@hypershield.net',
-            'Data Breach': 'databreach@hypershield.net'
+            'Malware / Virus': 'malware@hypershield.net',
+            'Data Breach': 'databreach@hypershield.net',
+            'Social Media Crime': 'socialmedia@hypershield.net',
+            'Other Cyber Crime': 'othercyber@hypershield.net'
         };
 
         const targetEmail = categoryMap[category] || 'financial@hypershield.net'; // Default to financial if no match

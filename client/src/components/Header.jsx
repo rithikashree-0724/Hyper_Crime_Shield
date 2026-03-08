@@ -85,7 +85,7 @@ const Header = () => {
                                     className="size-12 rounded-2xl bg-surface-accent border-2 border-primary/20 bg-cover bg-center transition-transform hover:scale-110"
                                     style={{
                                         backgroundImage: `url(${(() => {
-                                            if (!user.profileImage) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email || user.name)}`;
+                                            if (!user.profileImage) return `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
                                             const UPLOAD_ROOT = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
                                             return user.profileImage.startsWith('http') ? user.profileImage : `${UPLOAD_ROOT}/${user.profileImage.replace(/\\/g, '/')}`;
                                         })()})`

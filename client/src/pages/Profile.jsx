@@ -37,6 +37,7 @@ const Profile = () => {
         reader.readAsDataURL(profileImage);
     }, [profileImage]);
 
+
     const fetchProfile = async () => {
         try {
             const { data } = await API_SERVICE.getProfile();
@@ -234,7 +235,7 @@ const Profile = () => {
                                                     const url = userData.profileImage.startsWith('http') ? userData.profileImage : `${UPLOAD_ROOT}/${userData.profileImage.replace(/\\/g, '/')}`;
                                                     return { backgroundImage: `url(${url})` };
                                                 }
-                                                return { backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userData.email || userData.name)})` };
+                                                return { backgroundImage: `url(https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(userData.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf)` };
                                             })()}>
                                         </div>
                                         {editMode && (

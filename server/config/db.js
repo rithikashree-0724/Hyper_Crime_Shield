@@ -10,7 +10,7 @@ const sequelize = new Sequelize({
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("MySQL Database Connected Successfully.");
+    console.log("SQLite Database Connected Successfully.");
 
     if (process.env.NODE_ENV === 'development') {
       await sequelize.sync({ alter: true });

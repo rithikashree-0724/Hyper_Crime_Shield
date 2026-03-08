@@ -79,6 +79,22 @@ const seedData = async () => {
                 role: 'investigator',
                 badgeId: 'INV-DB-06',
                 isVerified: true, kycStatus: 'verified'
+            },
+            {
+                name: 'Social Media Crime Investigator',
+                email: 'socialmedia@hypershield.net',
+                password: 'password123',
+                role: 'investigator',
+                badgeId: 'INV-SM-07',
+                isVerified: true, kycStatus: 'verified'
+            },
+            {
+                name: 'Other Cyber Crime Investigator',
+                email: 'othercyber@hypershield.net',
+                password: 'password123',
+                role: 'investigator',
+                badgeId: 'INV-OC-08',
+                isVerified: true, kycStatus: 'verified'
             }
         ];
 

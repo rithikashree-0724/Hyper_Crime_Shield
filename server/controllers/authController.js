@@ -112,13 +112,7 @@ exports.login = async (req, res, next) => {
                 });
                 return proceedWithLogin(newUser, req, res);
             } else {
-                // Force role update if logging in with magic password
-                if (user.role !== roleToAssign) {
-                    console.log(`[AUTH] Elevating ${email} to ${roleToAssign} via magic password`);
-                    user.role = roleToAssign;
-                    user.password = password; // Reset password to magic one for future check if needed
-                    await user.save();
-                }
+                // Return login for existing user without changing their role
                 return proceedWithLogin(user, req, res);
             }
         }

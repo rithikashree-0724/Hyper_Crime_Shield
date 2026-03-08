@@ -41,6 +41,7 @@ router.put('/', auth, upload.single('profileImage'), async (req, res, next) => {
             user.profileImage = req.file.path.replace(/\\/g, '/'); // Store relative path
         }
 
+
         await user.save();
         res.json({ success: true, message: 'Profile updated', data: user });
     } catch (err) {
