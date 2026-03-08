@@ -13,7 +13,7 @@ const connectDB = async () => {
     console.log("SQLite Database Connected Successfully.");
 
     if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
+      await sequelize.sync();
       console.log("Database Synced.");
     }
   } catch (error) {
